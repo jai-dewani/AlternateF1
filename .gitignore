@@ -1,0 +1,34 @@
+# Dependencies
+node_modules/
+
+# SvelteKit and build output
+.svelte-kit/
+build/
+dist/
+
+# Test output
+coverage/
+
+# Environment files (keep example templates tracked)
+.env
+.env.*
+!.env.example
+!.env.sample
+
+# Logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Local caches and deployment output
+.cache/
+.vite/
+.vercel/
+.netlify/
+
+# Editor and operating-system files
+.DS_Store
+Thumbs.db
+.idea/
