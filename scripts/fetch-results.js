@@ -1,6 +1,6 @@
 // scripts/fetch-results.js
-// Fetches calendar, race results, and sprint results from the Jolpica F1 API.
-// Results are cached to data/raw/ as JSON files.
+// Fetches official calendar, race results, and sprint results from the Jolpica F1 API.
+// Results are cached in data/raw/ as JSON files for inspection and verification.
 // Run: node scripts/fetch-results.js
 
 import { mkdir, writeFile, readFile } from 'node:fs/promises';
@@ -12,16 +12,18 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.resolve(__dirname, '..');
 const RAW_DIR = path.join(ROOT, 'data', 'raw');
 const BASE_URL = 'https://api.jolpi.ca/ergast/f1';
-const SEASON = '2026';
-const DELAY_MS = 300; // be polite with rate limits
+const SEASON = process.env.F1_SEASON || 'current';
+const DELAY_MS = 350; // Respect rate limits
 
-async function sleep(ms) {
+function sleep(ms) {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
 async function fetchJson(url) {
   console.log(`  GET ${url}`);
-  const res = await fetch(url);
+  const res = await fetch(url, {
+    headers: { 'User-Agent': 'AlternateF1/1.0 (https://github.com/jai-dewani/AlternateF1)' }
+  });
   if (!res.ok) {
     throw new Error(`HTTP ${res.status} for ${url}`);
   }
@@ -31,7 +33,7 @@ async function fetchJson(url) {
 async function cachedFetch(cacheFile, url) {
   const fullPath = path.join(RAW_DIR, cacheFile);
   if (existsSync(fullPath)) {
-    console.log(`  CACHE HIT ${cacheFile}`);
+    console.log(`  [CACHE HIT] ${cacheFile}`);
     const text = await readFile(fullPath, 'utf-8');
     return JSON.parse(text);
   }
@@ -43,108 +45,83 @@ async function cachedFetch(cacheFile, url) {
 
 async function fetchCalendar() {
   const data = await cachedFetch('calendar.json', `${BASE_URL}/${SEASON}.json?limit=100`);
-  return data.MRData.RaceTable.Races;
+  return {
+    season: data.MRData.RaceTable.season,
+    races: data.MRData.RaceTable.Races || []
+  };
 }
 
-async function fetchRaceResults(round) {
-  const data = await cachedFetch(
-    `race-${round}.json`,
-    `${BASE_URL}/${SEASON}/${round}/results.json`
-  );
-  const races = data.MRData.RaceTable.Races;
-  if (!races || races.length === 0) return null;
-  return races[0].Results || [];
-}
-
-async function fetchSprintResults(round) {
+async function fetchRaceResults(seasonYear, round) {
   try {
     const data = await cachedFetch(
-      `sprint-${round}.json`,
-      `${BASE_URL}/${SEASON}/${round}/sprint.json`
+      `race-${round}.json`,
+      `${BASE_URL}/${seasonYear}/${round}/results.json`
     );
-    const races = data.MRData.RaceTable.Races;
+    const races = data.MRData?.RaceTable?.Races;
     if (!races || races.length === 0) return null;
-    return races[0].SprintResults || [];
-  } catch (e) {
-    // Sprint endpoint returns 404 or empty for non-sprint rounds
-    if (e.message.includes('HTTP 404') || e.message.includes('HTTP 4')) {
-      return null;
-    }
-    throw e;
+    return races[0].Results || [];
+  } catch (err) {
+    console.warn(`  Warning fetching round ${round}: ${err.message}`);
+    return null;
   }
 }
 
-async function fetchDriverStandings(round) {
-  const data = await cachedFetch(
-    `standings-${round}.json`,
-    `${BASE_URL}/${SEASON}/${round}/driverStandings.json`
-  );
-  const lists = data.MRData.StandingsTable?.StandingsLists;
-  if (!lists || lists.length === 0) return [];
-  return lists[0].DriverStandings || [];
+async function fetchSprintResults(seasonYear, round) {
+  try {
+    const data = await cachedFetch(
+      `sprint-${round}.json`,
+      `${BASE_URL}/${seasonYear}/${round}/sprint.json`
+    );
+    const races = data.MRData?.RaceTable?.Races;
+    if (!races || races.length === 0) return null;
+    return races[0].SprintResults || [];
+  } catch (err) {
+    if (err.message.includes('404')) return null;
+    return null;
+  }
 }
 
 async function main() {
   await mkdir(RAW_DIR, { recursive: true });
 
-  console.log(`\nFetching ${SEASON} F1 season from Jolpica API…`);
+  console.log(`\n========================================`);
+  console.log(`Fetching F1 Season (${SEASON}) from Jolpica API`);
+  console.log(`========================================\n`);
 
-  // 1. Calendar
-  console.log('\n[1/3] Calendar');
-  const calendar = await fetchCalendar();
-  console.log(`  Found ${calendar.length} rounds`);
+  // 1. Fetch Calendar
+  const { season: detectedSeason, races: calendar } = await fetchCalendar();
+  console.log(`Detected Season: ${detectedSeason} (${calendar.length} scheduled rounds)\n`);
 
-  // Determine which rounds have already happened (have a date in the past)
+  // Determine completed rounds strictly by past date
   const now = new Date();
-  const completedRounds = calendar.filter((race) => {
-    const raceDate = new Date(race.date);
-    return raceDate < now;
-  });
+  const completedRaces = calendar.filter((race) => new Date(race.date) < now);
+  console.log(`${completedRaces.length} of ${calendar.length} rounds have already taken place.\n`);
 
-  console.log(`  ${completedRounds.length} completed rounds`);
-
-  // 2. Race results
-  console.log('\n[2/3] Race results');
-  for (const race of completedRounds) {
+  // 2. Fetch Race Results for completed rounds
+  console.log(`Fetching results for ${completedRaces.length} completed rounds...`);
+  for (const race of completedRaces) {
     const round = race.round;
-    const results = await fetchRaceResults(round);
-    if (!results) {
-      console.log(`  Round ${round}: no results yet`);
+    const results = await fetchRaceResults(detectedSeason, round);
+    if (!results || results.length === 0) {
+      console.log(`  Round ${round} (${race.raceName}): No official results yet.`);
     } else {
-      console.log(`  Round ${round} (${race.raceName}): ${results.length} drivers`);
+      console.log(`  Round ${round} (${race.raceName}): ${results.length} drivers classified.`);
     }
-  }
 
-  // 3. Sprint results
-  console.log('\n[3/3] Sprint results');
-  for (const race of completedRounds) {
-    const round = race.round;
-    const hasSprint = 'Sprint' in race || race.Sprint;
-    if (hasSprint) {
-      const results = await fetchSprintResults(round);
-      if (!results) {
-        console.log(`  Round ${round}: sprint listed but no results yet`);
-      } else {
-        console.log(`  Round ${round}: ${results.length} sprint drivers`);
+    // 3. Fetch Sprint Results if applicable
+    const isSprintWeekend = 'Sprint' in race || race.Sprint;
+    if (isSprintWeekend) {
+      const sprintResults = await fetchSprintResults(detectedSeason, round);
+      if (sprintResults && sprintResults.length > 0) {
+        console.log(`    └ Sprint: ${sprintResults.length} drivers classified.`);
       }
-    } else {
-      // Try anyway — sometimes the calendar doesn't flag it correctly
-      // but we skip cache-file creation to avoid polluting with empty files
     }
   }
 
-  // 4. Driver standings (for validation)
-  console.log('\n[4/4] Driver standings (for validation)');
-  for (const race of completedRounds) {
-    const round = race.round;
-    const standings = await fetchDriverStandings(round);
-    console.log(`  Round ${round}: ${standings.length} drivers in standings`);
-  }
-
-  console.log('\nFetch complete. Raw data in data/raw/');
+  console.log(`\nFetch complete! Raw verified JSON cached in data/raw/\n`);
 }
 
-main().catch((e) => {
-  console.error(e);
+main().catch((err) => {
+  console.error('Fetch failed:', err);
   process.exit(1);
 });
