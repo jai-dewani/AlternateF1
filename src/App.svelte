@@ -6,7 +6,6 @@
   import BumpChart          from './lib/components/BumpChart.svelte';
   import LeadChangeBanner   from './lib/components/LeadChangeBanner.svelte';
   import BeneficiariesPanel from './lib/components/BeneficiariesPanel.svelte';
-  import SeasonScrubber     from './lib/components/SeasonScrubber.svelte';
   import PodiumShareModal   from './lib/components/PodiumShareModal.svelte';
   import CommunityPolls     from './lib/components/CommunityPolls.svelte';
 
@@ -255,18 +254,11 @@
         {/if}
       </div>
 
-      <!-- ── Beneficiaries + Scrubber ── -->
-      <div class="two-col">
-        <BeneficiariesPanel
-          beneficiaries={activeBeneficiaries}
-          {driversMap}
-        />
-        <SeasonScrubber
-          totalRounds={season.rounds.length}
-          {selectedRound}
-          onSelect={(r) => { selectedRound = r; }}
-        />
-      </div>
+      <!-- ── Beneficiaries ── -->
+      <BeneficiariesPanel
+        beneficiaries={activeBeneficiaries}
+        {driversMap}
+      />
 
       <!-- ── Community Polls ── -->
       <CommunityPolls drivers={season.drivers} />
