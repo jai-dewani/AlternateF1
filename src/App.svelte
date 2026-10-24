@@ -5,7 +5,6 @@
   import PointsLineChart    from './lib/components/PointsLineChart.svelte';
   import BumpChart          from './lib/components/BumpChart.svelte';
   import LeadChangeBanner   from './lib/components/LeadChangeBanner.svelte';
-  import BeneficiariesPanel from './lib/components/BeneficiariesPanel.svelte';
   import PodiumShareModal   from './lib/components/PodiumShareModal.svelte';
   import CommunityPolls     from './lib/components/CommunityPolls.svelte';
 
@@ -72,10 +71,6 @@
     season
       ? Object.fromEntries(season.drivers.map((d) => [d.id, d]))
       : {}
-  );
-
-  let activeBeneficiaries = $derived(
-    season?.beneficiaries?.[activeMode] || (Array.isArray(season?.beneficiaries) ? season.beneficiaries : [])
   );
 
   // ── Keyboard navigation ──────────────────────────────────────────────────────
@@ -253,12 +248,6 @@
           />
         {/if}
       </div>
-
-      <!-- ── Beneficiaries ── -->
-      <BeneficiariesPanel
-        beneficiaries={activeBeneficiaries}
-        {driversMap}
-      />
 
       <!-- ── Community Polls ── -->
       <CommunityPolls drivers={season.drivers} />

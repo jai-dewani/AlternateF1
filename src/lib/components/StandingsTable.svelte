@@ -63,7 +63,7 @@
           {@const color  = getDriverColor(driver)}
           {@const change = posChange(entry.driverId, entry.position)}
           {@const gap    = driverLeader ? driverLeader.points - entry.points : 0}
-          <tr animate:flip={{ duration: 280 }} style="--tc: {color}">
+          <tr animate:flip={{ duration: 380 }} style="--tc: {color}">
             <td class="c-pos">{entry.position}</td>
             <td class="c-driver">
               <span class="stripe"></span>
@@ -97,7 +97,7 @@
           {@const color = getConstructorColor(c.constructorId)}
           {@const name = getConstructorName(c.constructorId)}
           {@const gap = constructorLeader ? constructorLeader.points - c.points : 0}
-          <tr animate:flip={{ duration: 280 }} style="--tc: {color}">
+          <tr animate:flip={{ duration: 380 }} style="--tc: {color}">
             <td class="c-pos">{c.position}</td>
             <td class="c-driver">
               <span class="stripe"></span>
@@ -142,7 +142,7 @@
 
   .scroll { overflow-x: auto; max-height: 420px; overflow-y: auto; }
 
-  table { width: 100%; border-collapse: collapse; font-size: .85rem; }
+  table { width: 100%; border-collapse: separate; border-spacing: 0; font-size: .85rem; }
 
   thead th {
     padding: .45rem .8rem; text-align: left;
@@ -151,7 +151,7 @@
     position: sticky; top: 0; background: var(--bg-card); z-index: 1;
   }
 
-  tbody tr { border-bottom: 1px solid var(--border); transition: background .1s; }
+  tbody tr { border-bottom: 1px solid var(--border); transition: background .1s; will-change: transform; }
   tbody tr:hover { background: var(--bg-hover); }
   tbody tr:last-child { border-bottom: none; }
 
