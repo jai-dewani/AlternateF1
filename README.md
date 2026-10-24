@@ -1,17 +1,20 @@
-# F1 2026: What If Antonelli Never Raced?
+# AlternateF1: Formula 1.5 & What-If Championships
 
-A static web app that recomputes the 2026 F1 Drivers' Championship as if Kimi Antonelli had never entered. Built with Svelte 5 + Vite, data from the Jolpica F1 API.
+A static web app built with Svelte 5 + Vite that simulates alternate Formula 1 championship realities:
+- 🏎️ **Formula 1.5 (Default):** The Midfield Championship excluding the Big 4 (Red Bull, McLaren, Ferrari, Mercedes). Features both Drivers' & Constructors' Championships!
+- 🔮 **No Antonelli:** Re-scored championship as if Kimi Antonelli had never entered.
+- 🏆 **Podium Image Card Generator:** Pick your P1, P2, P3 midfield podium for the upcoming Grand Prix, generate a 1200x675 HD podium graphic, and share it directly to 𝕏 with one click.
+- ⚡ **Community Fan Polls:** Live voting powered by Appwrite Cloud ("The Golden Ticket" & "The Robbed by Rocket Ships Award").
 
-**Live site:** https://jai-dewani.github.io/alt-f1/ *(set your own URL here)*
+**Live Site:** [https://jai-dewani.github.io/AlternateF1/](https://jai-dewani.github.io/AlternateF1/)
 
 ---
 
-## Quick start
+## Quick Start
 
 ```bash
 npm install
-npm run refresh   # fetch 2026 data & generate public/data/season.json
-npm run dev       # start dev server at http://localhost:5173
+npm run dev       # Start local dev server at http://localhost:5173/AlternateF1/
 ```
 
 ## Commands
@@ -20,62 +23,18 @@ npm run dev       # start dev server at http://localhost:5173
 |---|---|
 | `npm run dev` | Start Vite dev server |
 | `npm run build` | Production build → `dist/` |
-| `npm run preview` | Preview the production build locally |
-| `npm run fetch` | Fetch raw data from Jolpica API → `data/raw/` |
-| `npm run compute` | Build `public/data/season.json` from cached raw data |
-| `npm run refresh` | Fetch + compute (both above) |
-| `npm test` | Run engine unit tests with Vitest |
+| `npm run preview` | Preview production build locally |
+| `npm test` | Run Vitest unit tests |
+| `npm run refresh` | Fetch latest Jolpica F1 API results & re-score seasons |
 
-## Refreshing data after a race
+## Appwrite Community Voting Setup
 
-```bash
-npm run refresh
-git add public/data/season.json data/raw/
-git commit -m "chore: refresh data after RX"
-git push
-```
+Community voting works in local-storage demo mode out of the box. To enable live real-time sync across all users:
+👉 Follow the 2-minute setup guide in [`APPWRITE_SETUP.md`](APPWRITE_SETUP.md).
 
-The GitHub Actions deploy workflow triggers automatically on push to `main`.
+## GitHub Pages Deployment
 
-## Manual GitHub Actions trigger
-
-Go to **Actions → Refresh F1 Data → Run workflow** in your repo.
-
-## GitHub Pages deploy
-
-1. Set `base` in `vite.config.js` to `'/<repo-name>/'`
-2. In repo Settings → Pages, set source to **GitHub Actions**
-3. Push to `main` — the deploy workflow handles the rest
-
-## Running tests
-
-```bash
-npm test
-```
-
-The sanity test (`tests/sanity.test.js`) is skipped until `data/raw/` exists. Run `npm run fetch` first.
-
-## Troubleshooting
-
-| Problem | Fix |
-|---|---|
-| `HTTP 404` on `season.json` | Run `npm run refresh` |
-| Jolpica API timeout | Retry later; last good JSON stays live |
-| Build fails on Svelte | Ensure Node ≥ 18 and `npm install` completed |
-| Base-path 404 on GitHub Pages | Set `base` in `vite.config.js` to `'/<repo-name>/'` |
-
-## Architecture
-
-```
-scripts/         Node data pipeline (fetch + compute)
-src/
-  lib/
-    engine.js    Pure scoring engine (shared browser + Node)
-    teamColors.js Team colour palette + flag emoji
-    components/  Svelte UI components
-  App.svelte     Root component (all state lives here)
-public/data/     Generated season.json (committed by CI)
-config/          scoring.json — points scales & removed driver
-tests/           Vitest engine + sanity tests
-.github/         refresh-data.yml + deploy.yml workflows
-```
+Deployments are automated via GitHub Actions on every push to `main`:
+1. In your GitHub repository: **Settings → Pages**.
+2. Under **Build and deployment → Source**, choose **GitHub Actions**.
+3. Push to `main` — the workflow builds and publishes the site to `https://jai-dewani.github.io/AlternateF1/`.

@@ -1,7 +1,9 @@
 // src/lib/engine.js
 // Pure scoring engine: given a race classification and a points scale,
-// re-scores the result after removing the specified driver.
+// re-scores the result after removing the specified driver(s) or top teams.
 // No side effects, no imports, importable by Node scripts and the browser.
+
+export const TOP_TEAMS = ['red_bull', 'mclaren', 'ferrari', 'mercedes'];
 
 /**
  * Points scales.
@@ -29,40 +31,50 @@ export function scoreClassification(classification, scale) {
 }
 
 /**
- * Remove a driver from a classification and re-score.
- * Drivers ahead of the removed driver keep their position.
- * Drivers behind move up one place.
+ * Remove one or more drivers from a classification and re-score.
+ * Drivers ahead of the removed driver(s) keep their position relative to those remaining.
+ * Drivers behind move up by the count of removed drivers ahead of them.
  *
  * @param {string[]} classification - Ordered list of driver IDs (1st to last).
- * @param {string} removedDriverId - The driver to remove.
+ * @param {string|string[]|Set<string>} removedDrivers - Driver ID or IDs to remove.
  * @param {number[]} scale - Points awarded per finishing position.
  * @returns {{
  *   real: { driverId: string, position: number, points: number }[],
  *   whatIf: { driverId: string, position: number, points: number }[],
  *   removedIndex: number,
+ *   removedCount: number,
  * }}
  */
-export function computeWhatIf(classification, removedDriverId, scale) {
+export function computeWhatIf(classification, removedDrivers, scale) {
   const real = scoreClassification(classification, scale);
-  const removedIndex = classification.indexOf(removedDriverId);
+  const removedSet = new Set(
+    Array.isArray(removedDrivers)
+      ? removedDrivers
+      : removedDrivers instanceof Set
+        ? Array.from(removedDrivers)
+        : [removedDrivers]
+  );
 
-  // If the removed driver isn't in this classification, whatIf == real
-  if (removedIndex === -1) {
-    return { real, whatIf: real.map((r) => ({ ...r })), removedIndex };
-  }
-
-  const whatIfClassification = classification.filter((id) => id !== removedDriverId);
+  const whatIfClassification = classification.filter((id) => !removedSet.has(id));
   const whatIf = scoreClassification(whatIfClassification, scale);
 
-  return { real, whatIf, removedIndex };
+  const firstRemoved = typeof removedDrivers === 'string' ? removedDrivers : [...removedSet][0];
+  const removedIndex = classification.indexOf(firstRemoved);
+
+  return {
+    real,
+    whatIf,
+    removedIndex,
+    removedCount: classification.length - whatIfClassification.length,
+  };
 }
 
 /**
- * Accumulate cumulative points across rounds.
+ * Accumulate cumulative driver points across rounds.
  *
  * @param {Array<{ driverId: string, points: number }[]>} roundResults
  *   Array of per-round scored results (race + sprint combined if applicable).
- * @returns {Map<string, number[]>} Map from driverId to array of cumulative points, one per round.
+ * @returns {Array<{ driverId: string, points: number }[]>} Array of cumulative points, one per round.
  */
 export function accumulatePoints(roundResults) {
   const totals = new Map(); // driverId -> running total
@@ -82,8 +94,8 @@ export function accumulatePoints(roundResults) {
  * Assign positions to a sorted standings snapshot.
  * Ties get the same position (same points = same position).
  *
- * @param {{ driverId: string, points: number }[]} sorted - Sorted by points desc.
- * @returns {{ driverId: string, points: number, position: number }[]}
+ * @param {Array<object>} sorted - Sorted by points desc.
+ * @returns {Array<object>} Same objects with `position` property added.
  */
 export function assignPositions(sorted) {
   let pos = 1;
@@ -92,5 +104,30 @@ export function assignPositions(sorted) {
       pos = idx + 1;
     }
     return { ...entry, position: pos };
+  });
+}
+
+/**
+ * Accumulate cumulative constructor points across rounds.
+ *
+ * @param {Array<{ driverId: string, points: number }[]>} roundResults
+ * @param {Record<string, { constructorId: string, constructor?: string }>} driversMap
+ * @returns {Array<Array<{ constructorId: string, points: number, position: number }>>}
+ */
+export function accumulateConstructorStandings(roundResults, driversMap) {
+  const totals = new Map(); // constructorId -> running total
+
+  return roundResults.map((results) => {
+    for (const { driverId, points } of results) {
+      const constructorId = driversMap[driverId]?.constructorId || 'unknown';
+      if (constructorId === 'unknown' || TOP_TEAMS.includes(constructorId)) continue;
+      totals.set(constructorId, (totals.get(constructorId) ?? 0) + points);
+    }
+
+    const sorted = [...totals.entries()]
+      .map(([constructorId, points]) => ({ constructorId, points }))
+      .sort((a, b) => b.points - a.points || a.constructorId.localeCompare(b.constructorId));
+
+    return assignPositions(sorted);
   });
 }

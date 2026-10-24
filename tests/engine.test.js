@@ -5,6 +5,7 @@ import {
   computeWhatIf,
   accumulatePoints,
   assignPositions,
+  accumulateConstructorStandings,
   DEFAULT_SCALES,
 } from '../src/lib/engine.js';
 
@@ -170,5 +171,45 @@ describe('assignPositions', () => {
     expect(result[0].position).toBe(1);
     expect(result[1].position).toBe(2);
     expect(result[2].position).toBe(2);
+  });
+});
+
+
+describe('computeWhatIf – Formula 1.5 (Multi-Driver Exclusion)', () => {
+  const topFourDrivers = ['VER', 'TSU', 'NOR', 'PIA', 'LEC', 'HAM', 'RUS', 'ANT'];
+  const midfieldDrivers = ['ALO', 'SAI', 'GAS', 'HUL', 'STR', 'OCO', 'ALB', 'BOT', 'ZHO', 'MAG'];
+  const fullGrid = [...topFourDrivers.slice(0, 4), midfieldDrivers[0], topFourDrivers[4], midfieldDrivers[1], ...midfieldDrivers.slice(2)];
+
+  it('removes all top 4 team drivers and crowns top midfield driver as P1', () => {
+    const { whatIf, removedCount } = computeWhatIf(fullGrid, topFourDrivers, RACE);
+    expect(removedCount).toBe(5); // 5 top drivers present in grid
+    expect(whatIf[0]).toEqual({ driverId: 'ALO', position: 1, points: 25 });
+    expect(whatIf[1]).toEqual({ driverId: 'SAI', position: 2, points: 18 });
+    expect(whatIf[2]).toEqual({ driverId: 'GAS', position: 3, points: 15 });
+  });
+});
+
+describe('accumulateConstructorStandings', () => {
+  it('accumulates team points across rounds correctly for F1.5', () => {
+    const driversMap = {
+      ALO: { constructorId: 'aston_martin' },
+      STR: { constructorId: 'aston_martin' },
+      SAI: { constructorId: 'williams' },
+      ALB: { constructorId: 'williams' },
+      VER: { constructorId: 'red_bull' }, // top team, should be ignored
+    };
+
+    const round1 = [
+      { driverId: 'ALO', points: 25 },
+      { driverId: 'SAI', points: 18 },
+      { driverId: 'STR', points: 15 },
+      { driverId: 'ALB', points: 12 },
+      { driverId: 'VER', points: 25 },
+    ];
+
+    const standings = accumulateConstructorStandings([round1], driversMap);
+    expect(standings[0][0]).toEqual({ constructorId: 'aston_martin', points: 40, position: 1 });
+    expect(standings[0][1]).toEqual({ constructorId: 'williams', points: 30, position: 2 });
+    expect(standings[0].find((c) => c.constructorId === 'red_bull')).toBeUndefined();
   });
 });

@@ -1,10 +1,13 @@
 <script>
-  import { getDriverColor } from '../teamColors.js';
+  import { getDriverColor, getConstructorName, getConstructorColor } from '../teamColors.js';
   import { flip } from 'svelte/animate';
 
-  let { round, prevRound, driversMap, showWhatIf } = $props();
+  let { round, prevRound, driversMap, showWhatIf, isF15 = false } = $props();
 
-  let standings = $derived(showWhatIf ? round.whatIfStandings : round.realStandings);
+  let standingsTab = $state('drivers'); // 'drivers' | 'constructors'
+
+  let driverStandings = $derived(showWhatIf ? round.whatIfStandings : round.realStandings);
+  let constructorStandings = $derived(round.constructorStandings || []);
 
   let prevPosMap = $derived.by(() => {
     if (!prevRound) return {};
@@ -12,7 +15,8 @@
     return Object.fromEntries(src.map((s) => [s.driverId, s.position]));
   });
 
-  let leader = $derived(standings[0] ?? null);
+  let driverLeader = $derived(driverStandings[0] ?? null);
+  let constructorLeader = $derived(constructorStandings[0] ?? null);
 
   function posChange(driverId, curPos) {
     const prev = prevPosMap[driverId];
@@ -22,46 +26,90 @@
 </script>
 
 <div class="panel-head">
-  <h2>Championship Standings</h2>
-  <span class="label">After R{round.round}</span>
+  <div>
+    <h2>Championship Standings</h2>
+    <span class="label">After R{round.round}</span>
+  </div>
+
+  {#if isF15 && constructorStandings.length > 0}
+    <div class="tabs">
+      <button
+        class:active={standingsTab === 'drivers'}
+        onclick={() => { standingsTab = 'drivers'; }}
+      >Drivers</button>
+      <button
+        class:active={standingsTab === 'constructors'}
+        onclick={() => { standingsTab = 'constructors'; }}
+      >Constructors</button>
+    </div>
+  {/if}
 </div>
 
 <div class="scroll">
-  <table>
-    <thead>
-      <tr>
-        <th class="c-pos">Pos</th>
-        <th>Driver</th>
-        <th class="c-pts">Pts</th>
-        <th class="c-gap">Gap</th>
-        <th class="c-chg">Δ</th>
-      </tr>
-    </thead>
-    <tbody>
-      {#each standings as entry (entry.driverId)}
-        {@const driver = driversMap[entry.driverId]}
-        {@const color  = getDriverColor(driver)}
-        {@const change = posChange(entry.driverId, entry.position)}
-        {@const gap    = leader ? leader.points - entry.points : 0}
-        <tr animate:flip={{ duration: 280 }} style="--tc: {color}">
-          <td class="c-pos">{entry.position}</td>
-          <td class="c-driver">
-            <span class="stripe"></span>
-            <span class="code">{driver?.code ?? entry.driverId}</span>
-            <span class="name">{driver?.name ?? ''}</span>
-          </td>
-          <td class="c-pts">{entry.points}</td>
-          <td class="c-gap">{gap === 0 ? '—' : `-${gap}`}</td>
-          <td class="c-chg">
-            {#if change === null}<span class="eq">–</span>
-            {:else if change > 0}<span class="up">▲{change}</span>
-            {:else if change < 0}<span class="dn">▼{Math.abs(change)}</span>
-            {:else}<span class="eq">–</span>{/if}
-          </td>
+  {#if standingsTab === 'drivers'}
+    <table>
+      <thead>
+        <tr>
+          <th class="c-pos">Pos</th>
+          <th>Driver</th>
+          <th class="c-pts">Pts</th>
+          <th class="c-gap">Gap</th>
+          <th class="c-chg">Δ</th>
         </tr>
-      {/each}
-    </tbody>
-  </table>
+      </thead>
+      <tbody>
+        {#each driverStandings as entry (entry.driverId)}
+          {@const driver = driversMap[entry.driverId]}
+          {@const color  = getDriverColor(driver)}
+          {@const change = posChange(entry.driverId, entry.position)}
+          {@const gap    = driverLeader ? driverLeader.points - entry.points : 0}
+          <tr animate:flip={{ duration: 280 }} style="--tc: {color}">
+            <td class="c-pos">{entry.position}</td>
+            <td class="c-driver">
+              <span class="stripe"></span>
+              <span class="code">{driver?.code ?? entry.driverId}</span>
+              <span class="name">{driver?.name ?? ''}</span>
+            </td>
+            <td class="c-pts">{entry.points}</td>
+            <td class="c-gap">{gap === 0 ? '—' : `-${gap}`}</td>
+            <td class="c-chg">
+              {#if change === null}<span class="eq">–</span>
+              {:else if change > 0}<span class="up">▲{change}</span>
+              {:else if change < 0}<span class="dn">▼{Math.abs(change)}</span>
+              {:else}<span class="eq">–</span>{/if}
+            </td>
+          </tr>
+        {/each}
+      </tbody>
+    </table>
+  {:else}
+    <table>
+      <thead>
+        <tr>
+          <th class="c-pos">Pos</th>
+          <th>Constructor</th>
+          <th class="c-pts">Pts</th>
+          <th class="c-gap">Gap</th>
+        </tr>
+      </thead>
+      <tbody>
+        {#each constructorStandings as c (c.constructorId)}
+          {@const color = getConstructorColor(c.constructorId)}
+          {@const name = getConstructorName(c.constructorId)}
+          {@const gap = constructorLeader ? constructorLeader.points - c.points : 0}
+          <tr animate:flip={{ duration: 280 }} style="--tc: {color}">
+            <td class="c-pos">{c.position}</td>
+            <td class="c-driver">
+              <span class="stripe"></span>
+              <span class="code" style="color: {color}">{name}</span>
+            </td>
+            <td class="c-pts">{c.points}</td>
+            <td class="c-gap">{gap === 0 ? '—' : `-${gap}`}</td>
+          </tr>
+        {/each}
+      </tbody>
+    </table>
+  {/if}
 </div>
 
 <style>
@@ -77,7 +125,20 @@
   .label {
     font-size: .75rem; color: var(--text-muted);
     background: var(--bg-hover); padding: .2em .55em; border-radius: 4px;
+    display: inline-block; margin-top: 0.15rem;
   }
+
+  .tabs {
+    display: flex;
+    border: 1px solid var(--border); border-radius: 6px; overflow: hidden;
+  }
+  .tabs button {
+    padding: .25em .7em; background: none; border: none;
+    color: var(--text-muted); font-size: .78rem; cursor: pointer;
+    transition: background .15s, color .15s;
+  }
+  .tabs button:hover  { background: var(--bg-hover); color: var(--text); }
+  .tabs button.active { background: var(--bg-hover); color: var(--text); font-weight: 700; }
 
   .scroll { overflow-x: auto; max-height: 420px; overflow-y: auto; }
 

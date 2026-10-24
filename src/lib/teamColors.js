@@ -43,3 +43,24 @@ export const COUNTRY_FLAGS = {
 export function getFlag(country) {
   return COUNTRY_FLAGS[country] ?? '🏁';
 }
+
+export const CONSTRUCTOR_NAMES = {
+  mercedes:      'Mercedes',
+  red_bull:      'Red Bull Racing',
+  ferrari:       'Ferrari',
+  mclaren:       'McLaren',
+  aston_martin:  'Aston Martin',
+  alpine:        'Alpine',
+  williams:      'Williams',
+  rb:            'Racing Bulls',
+  sauber:        'Kick Sauber',
+  haas:          'Haas',
+};
+
+export function getConstructorName(constructorId) {
+  return CONSTRUCTOR_NAMES[constructorId] ?? constructorId;
+}
+
+export function getConstructorColor(constructorId) {
+  return TEAM_COLORS[constructorId] ?? '#888888';
+}

@@ -7,15 +7,21 @@
   import LeadChangeBanner   from './lib/components/LeadChangeBanner.svelte';
   import BeneficiariesPanel from './lib/components/BeneficiariesPanel.svelte';
   import SeasonScrubber     from './lib/components/SeasonScrubber.svelte';
+  import PodiumShareModal   from './lib/components/PodiumShareModal.svelte';
+  import CommunityPolls     from './lib/components/CommunityPolls.svelte';
 
   // ── State ───────────────────────────────────────────────────────────────────
   let season        = $state(null);
   let loading       = $state(true);
   let fetchError    = $state(null);
   let selectedRound = $state(1);
+  let activeMode    = $state('f1_5');   // 'f1_5' (default) | 'no_antonelli'
   let showWhatIf    = $state(true);
   let activeTab     = $state('race');   // 'race' | 'sprint'
-  let activeChart   = $state('line');  // 'line' | 'bump'
+  let activeChart   = $state('line');   // 'line' | 'bump'
+  let isPodiumOpen  = $state(false);
+
+  const TOP_TEAMS = ['red_bull', 'mclaren', 'ferrari', 'mercedes'];
 
   // ── Load data ───────────────────────────────────────────────────────────────
   async function loadSeason() {
@@ -34,14 +40,43 @@
 
   $effect(() => { loadSeason(); });
 
-  // ── Derived ─────────────────────────────────────────────────────────────────
-  let currentRound = $derived(season?.rounds[selectedRound - 1] ?? null);
-  let prevRound    = $derived(selectedRound > 1 ? season?.rounds[selectedRound - 2] ?? null : null);
+  // ── Normalize rounds for active mode ─────────────────────────────────────────
+  let modeRounds = $derived.by(() => {
+    if (!season) return [];
+    return season.rounds.map((r) => {
+      const modeData = r[activeMode] || {};
+      return {
+        ...r,
+        whatIfRace: modeData.whatIfRace || r.whatIfRace || [],
+        whatIfSprint: modeData.whatIfSprint || r.whatIfSprint || [],
+        whatIfStandings: modeData.whatIfStandings || r.whatIfStandings || [],
+        constructorStandings: modeData.constructorStandings || [],
+        whatIfLeader: modeData.whatIfLeader || r.whatIfLeader,
+        whatIfLeaderChanged: modeData.whatIfLeaderChanged ?? r.whatIfLeaderChanged,
+        prevWhatIfLeader: modeData.prevWhatIfLeader ?? r.prevWhatIfLeader,
+      };
+    });
+  });
+
+  let currentRound = $derived(modeRounds[selectedRound - 1] ?? null);
+  let prevRound    = $derived(selectedRound > 1 ? modeRounds[selectedRound - 2] ?? null : null);
+
+  let activeDrivers = $derived.by(() => {
+    if (!season) return [];
+    if (activeMode === 'f1_5') {
+      return season.drivers.filter((d) => !TOP_TEAMS.includes(d.constructorId));
+    }
+    return season.drivers;
+  });
 
   let driversMap = $derived(
     season
       ? Object.fromEntries(season.drivers.map((d) => [d.id, d]))
       : {}
+  );
+
+  let activeBeneficiaries = $derived(
+    season?.beneficiaries?.[activeMode] || (Array.isArray(season?.beneficiaries) ? season.beneficiaries : [])
   );
 
   // ── Keyboard navigation ──────────────────────────────────────────────────────
@@ -74,14 +109,55 @@
     <header>
       <div class="header-inner">
         <div>
-          <h1>F1 <span class="year">{season.meta.season}</span></h1>
-          <p class="subtitle">What If <span class="removed">Antonelli</span> Never Raced?</p>
+          <div class="title-row">
+            <h1>
+              {#if activeMode === 'f1_5'}
+                FORMULA <span class="year">1.5</span>
+              {:else}
+                F1 <span class="year">{season.meta.season}</span>
+              {/if}
+            </h1>
+
+            <!-- Mode Switcher -->
+            <div class="mode-switcher" role="tablist" aria-label="Select Championship Mode">
+              <button
+                class:active={activeMode === 'f1_5'}
+                onclick={() => { activeMode = 'f1_5'; }}
+                role="tab"
+                aria-selected={activeMode === 'f1_5'}
+              >
+                🏆 Formula 1.5
+              </button>
+              <button
+                class:active={activeMode === 'no_antonelli'}
+                onclick={() => { activeMode = 'no_antonelli'; }}
+                role="tab"
+                aria-selected={activeMode === 'no_antonelli'}
+              >
+                🔮 No Antonelli
+              </button>
+            </div>
+          </div>
+
+          <p class="subtitle">
+            {#if activeMode === 'f1_5'}
+              The 2026 Midfield World Championship <span class="rule-hint">(Excluding Red Bull, McLaren, Ferrari & Mercedes)</span>
+            {:else}
+              What If <span class="removed">Antonelli</span> Never Raced in 2026?
+            {/if}
+          </p>
         </div>
-        <p class="updated">
-          Updated {new Date(season.meta.generatedAt).toLocaleDateString('en-GB',
-            { day: 'numeric', month: 'short', year: 'numeric' })}
-          · {season.meta.completedRounds}/{season.meta.totalRounds} rounds
-        </p>
+
+        <div class="header-actions">
+          <button class="share-trigger-btn" onclick={() => { isPodiumOpen = true; }}>
+            <span>🏁</span> Pick Podium & Share to 𝕏
+          </button>
+          <p class="updated">
+            Updated {new Date(season.meta.generatedAt).toLocaleDateString('en-GB',
+              { day: 'numeric', month: 'short', year: 'numeric' })}
+            · {season.meta.completedRounds}/{season.meta.totalRounds} rounds
+          </p>
+        </div>
       </div>
     </header>
 
@@ -90,7 +166,7 @@
       <!-- ── Race Navigator ── -->
       <section>
         <RaceNavigator
-          rounds={season.rounds}
+          rounds={modeRounds}
           {selectedRound}
           onSelect={(r) => { selectedRound = r; }}
         />
@@ -109,12 +185,16 @@
         <label class="toggle">
           <input type="checkbox" bind:checked={showWhatIf} />
           <span class="pill" class:active={showWhatIf}>
-            {showWhatIf ? '🔮 What-If' : '📊 Real 2026'}
+            {showWhatIf ? (activeMode === 'f1_5' ? '🏆 F1.5 Re-scored' : '🔮 What-If Antonelli') : '📊 Official 2026'}
           </span>
         </label>
-        {#if showWhatIf}
-          <span class="toggle-hint">Antonelli removed · everyone behind him moves up one place</span>
-        {/if}
+        <span class="toggle-hint">
+          {#if activeMode === 'f1_5'}
+            Top 4 teams removed · Midfield P1 receives 25 pts, P2 gets 18 pts
+          {:else}
+            Antonelli removed · everyone behind him moves up one place
+          {/if}
+        </span>
       </div>
 
       <!-- ── Race result + Standings ── -->
@@ -137,6 +217,7 @@
               {prevRound}
               {driversMap}
               {showWhatIf}
+              isF15={activeMode === 'f1_5'}
             />
           {/if}
         </div>
@@ -148,7 +229,7 @@
           <button
             class:active={activeChart === 'line'}
             onclick={() => { activeChart = 'line'; }}
-          >Points Over Season</button>
+          >Points Over Season ({activeMode === 'f1_5' ? 'Midfield' : 'All'})</button>
           <button
             class:active={activeChart === 'bump'}
             onclick={() => { activeChart = 'bump'; }}
@@ -157,16 +238,16 @@
 
         {#if activeChart === 'line'}
           <PointsLineChart
-            rounds={season.rounds}
-            drivers={season.drivers}
+            rounds={modeRounds}
+            drivers={activeDrivers}
             {selectedRound}
             {showWhatIf}
             onRoundSelect={(r) => { selectedRound = r; }}
           />
         {:else}
           <BumpChart
-            rounds={season.rounds}
-            drivers={season.drivers}
+            rounds={modeRounds}
+            drivers={activeDrivers}
             {selectedRound}
             {showWhatIf}
             onRoundSelect={(r) => { selectedRound = r; }}
@@ -177,7 +258,7 @@
       <!-- ── Beneficiaries + Scrubber ── -->
       <div class="two-col">
         <BeneficiariesPanel
-          beneficiaries={season.beneficiaries}
+          beneficiaries={activeBeneficiaries}
           {driversMap}
         />
         <SeasonScrubber
@@ -187,11 +268,21 @@
         />
       </div>
 
+      <!-- ── Community Polls ── -->
+      <CommunityPolls drivers={season.drivers} />
+
     </main>
 
+    <!-- Podium Share Modal -->
+    <PodiumShareModal
+      isOpen={isPodiumOpen}
+      onClose={() => { isPodiumOpen = false; }}
+      drivers={season.drivers}
+      calendar={season.calendar || []}
+    />
+
     <footer>
-      Data from <a href="https://api.jolpi.ca" target="_blank" rel="noopener">Jolpica F1 API</a>.
-      Built with Svelte 5 + Vite.
+      Formula 1.5 & What-If Championship Engine · Data from <a href="https://api.jolpi.ca" target="_blank" rel="noopener">Jolpica F1 API</a> · Built with Svelte 5 + Vite.
     </footer>
 
   </div>
@@ -209,7 +300,7 @@
     --text:         #e8e8ec;
     --text-muted:   #7e7e95;
     --accent:       #e10600;
-    --accent-2:     #ff8c00;
+    --accent-2:     #ff8000;
     --green:        #3cb371;
     --red:          #e10600;
     --radius:       10px;
@@ -254,22 +345,81 @@
   .app { max-width: 1400px; margin: 0 auto; padding: 0 1rem 3rem; }
 
   header {
-    padding: 1.75rem 0 1.25rem;
+    padding: 1.5rem 0 1.25rem;
     border-bottom: 1px solid var(--border);
-    margin-bottom: 1.5rem;
+    margin-bottom: 1.25rem;
   }
   .header-inner {
     display: flex;
     align-items: flex-end;
     justify-content: space-between;
+    gap: 1.25rem;
+    flex-wrap: wrap;
+  }
+
+  .title-row {
+    display: flex;
+    align-items: center;
     gap: 1rem;
     flex-wrap: wrap;
   }
-  h1 { font-size: 2.4rem; font-weight: 900; letter-spacing: -.04em; line-height: 1; }
-  .year { color: var(--accent); }
-  .subtitle { font-size: 1rem; color: var(--text-muted); margin-top: .35rem; }
+  h1 { font-size: 2.2rem; font-weight: 900; letter-spacing: -.04em; line-height: 1; }
+  .year { color: var(--accent-2); }
+  .subtitle { font-size: 0.95rem; color: var(--text-muted); margin-top: .4rem; }
+  .rule-hint { color: #aaaab8; font-size: 0.82rem; }
   .removed { color: var(--accent); font-weight: 600; }
-  .updated { font-size: .75rem; color: var(--text-muted); text-align: right; flex-shrink: 0; }
+
+  .mode-switcher {
+    display: flex;
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 999px;
+    padding: 3px;
+  }
+  .mode-switcher button {
+    background: none;
+    border: none;
+    color: var(--text-muted);
+    font-size: 0.82rem;
+    font-weight: 600;
+    padding: 0.35rem 0.9rem;
+    border-radius: 999px;
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+  .mode-switcher button:hover { color: var(--text); }
+  .mode-switcher button.active {
+    background: #ff8000;
+    color: #000;
+    font-weight: 800;
+  }
+
+  .header-actions {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 0.5rem;
+    flex-shrink: 0;
+  }
+  .share-trigger-btn {
+    background: linear-gradient(135deg, #1f1500, #2d1a00);
+    border: 1.5px solid #ff8000;
+    color: #fff;
+    padding: 0.55rem 1.1rem;
+    border-radius: 8px;
+    font-weight: 700;
+    font-size: 0.85rem;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 0.45rem;
+    transition: all 0.2s;
+  }
+  .share-trigger-btn:hover {
+    background: #ff8000;
+    color: #000;
+  }
+  .updated { font-size: .75rem; color: var(--text-muted); text-align: right; }
 
   main { display: flex; flex-direction: column; gap: 1rem; }
 
@@ -278,9 +428,10 @@
     grid-template-columns: 1fr 1fr;
     gap: 1rem;
   }
-  @media (max-width: 768px) {
+  @media (max-width: 820px) {
     .two-col { grid-template-columns: 1fr; }
     h1 { font-size: 1.8rem; }
+    .header-actions { align-items: flex-start; }
   }
 
   .card {
@@ -310,15 +461,13 @@
     user-select: none;
   }
   .pill.active {
-    border-color: var(--accent);
+    border-color: var(--accent-2);
     color: var(--text);
-    background: color-mix(in srgb, var(--accent) 12%, transparent);
+    background: color-mix(in srgb, var(--accent-2) 14%, transparent);
   }
   .toggle-hint { font-size: .75rem; color: var(--text-muted); }
 
   /* ── Chart card ──────────────────────────────────────────────────────────── */
-  .chart-card { }
-
   .chart-tabs {
     display: flex;
     border-bottom: 1px solid var(--border);
@@ -337,8 +486,8 @@
   .chart-tabs button:hover { color: var(--text); }
   .chart-tabs button.active {
     color: var(--text);
-    border-bottom-color: var(--accent);
-    font-weight: 600;
+    border-bottom-color: var(--accent-2);
+    font-weight: 700;
   }
 
   /* ── Footer ──────────────────────────────────────────────────────────────── */
