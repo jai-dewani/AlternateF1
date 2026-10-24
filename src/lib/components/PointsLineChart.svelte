@@ -79,8 +79,10 @@
             borderWidth: 1,
             titleColor: '#e8e8ec',
             bodyColor: '#7e7e95',
+            itemSort: (a, b) => (b.parsed.y ?? 0) - (a.parsed.y ?? 0),
             callbacks: {
               title: ([item]) => `R${item.dataIndex + 1}: ${_rounds[item.dataIndex]?.name}`,
+              label: (item) => ` ${item.dataset.label}: ${item.parsed.y ?? 0} pts`,
             },
           },
         },
