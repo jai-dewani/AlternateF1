@@ -4,8 +4,7 @@
   import StandingsTable     from './lib/components/StandingsTable.svelte';
   import PointsLineChart    from './lib/components/PointsLineChart.svelte';
   import BumpChart          from './lib/components/BumpChart.svelte';
-  import LeadChangeBanner   from './lib/components/LeadChangeBanner.svelte';
-  import PodiumShareModal   from './lib/components/PodiumShareModal.svelte';
+  import PodiumHero         from './lib/components/PodiumHero.svelte';
   import CommunityPolls     from './lib/components/CommunityPolls.svelte';
 
   // ── State ───────────────────────────────────────────────────────────────────
@@ -17,7 +16,6 @@
   let showWhatIf    = $state(true);
   let activeTab     = $state('race');   // 'race' | 'sprint'
   let activeChart   = $state('line');   // 'line' | 'bump'
-  let isPodiumOpen  = $state(false);
 
   const TOP_TEAMS = ['red_bull', 'mclaren', 'ferrari', 'mercedes'];
 
@@ -143,9 +141,6 @@
         </div>
 
         <div class="header-actions">
-          <button class="share-trigger-btn" onclick={() => { isPodiumOpen = true; }}>
-            <span>🏁</span> Pick Podium & Share to 𝕏
-          </button>
           <p class="updated">
             Updated {new Date(season.meta.generatedAt).toLocaleDateString('en-GB',
               { day: 'numeric', month: 'short', year: 'numeric' })}
@@ -157,22 +152,18 @@
 
     <main>
 
+      <!-- ── Hero: Podium Predictor ── -->
+      <PodiumHero drivers={season.drivers} calendar={season.calendar || []} />
+
       <!-- ── Race Navigator ── -->
       <section>
         <RaceNavigator
           rounds={modeRounds}
           {selectedRound}
+          {driversMap}
           onSelect={(r) => { selectedRound = r; }}
         />
       </section>
-
-      <!-- ── Lead-change banner ── -->
-      {#if currentRound?.whatIfLeaderChanged}
-        <LeadChangeBanner
-          newLeader={driversMap[currentRound.whatIfLeader]}
-          prevLeader={driversMap[currentRound.prevWhatIfLeader]}
-        />
-      {/if}
 
       <!-- ── Toggle ── -->
       <div class="toggle-row">
@@ -253,14 +244,6 @@
       <CommunityPolls drivers={season.drivers} />
 
     </main>
-
-    <!-- Podium Share Modal -->
-    <PodiumShareModal
-      isOpen={isPodiumOpen}
-      onClose={() => { isPodiumOpen = false; }}
-      drivers={season.drivers}
-      calendar={season.calendar || []}
-    />
 
     <footer>
       Formula 1.5 & What-If Championship Engine · Data from <a href="https://api.jolpi.ca" target="_blank" rel="noopener">Jolpica F1 API</a> · Built with Svelte 5 + Vite.
@@ -381,24 +364,6 @@
     align-items: flex-end;
     gap: 0.5rem;
     flex-shrink: 0;
-  }
-  .share-trigger-btn {
-    background: linear-gradient(135deg, #1f1500, #2d1a00);
-    border: 1.5px solid #ff8000;
-    color: #fff;
-    padding: 0.55rem 1.1rem;
-    border-radius: 8px;
-    font-weight: 700;
-    font-size: 0.85rem;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    gap: 0.45rem;
-    transition: all 0.2s;
-  }
-  .share-trigger-btn:hover {
-    background: #ff8000;
-    color: #000;
   }
   .updated { font-size: .75rem; color: var(--text-muted); text-align: right; }
 

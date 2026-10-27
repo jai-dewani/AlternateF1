@@ -1,7 +1,7 @@
 <script>
   import { getFlag } from '../teamColors.js';
 
-  let { rounds, selectedRound, onSelect } = $props();
+  let { rounds, selectedRound, onSelect, driversMap = {} } = $props();
 
   let current   = $derived(rounds[selectedRound - 1]);
   let canPrev   = $derived(selectedRound > 1);
@@ -20,6 +20,11 @@
           <div class="race-sub">{current?.circuit} · {current?.locality} · {current?.date}</div>
         </div>
       </div>
+      {#if current?.whatIfLeaderChanged}
+        <span class="lead-change-tag">
+          👑 {driversMap[current.whatIfLeader]?.name ?? current.whatIfLeader} took lead
+        </span>
+      {/if}
       {#if current?.hasSprint}
         <span class="sprint-tag">Sprint Weekend</span>
       {/if}
@@ -93,6 +98,19 @@
   .race-sub {
     font-size: .75rem; color: var(--text-muted); margin-top: .1rem;
     white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  }
+
+  .lead-change-tag {
+    background: rgba(255, 215, 0, 0.12);
+    color: #ffd700;
+    border: 1px solid rgba(255, 215, 0, 0.35);
+    font-size: .68rem;
+    font-weight: 700;
+    padding: .2em .6em;
+    border-radius: 4px;
+    letter-spacing: .03em;
+    flex-shrink: 0;
+    white-space: nowrap;
   }
 
   .sprint-tag {
