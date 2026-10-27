@@ -5,9 +5,27 @@
 
   const TOP_TEAMS = ['red_bull', 'mclaren', 'ferrari', 'mercedes'];
 
-  let midfieldDrivers = $derived(
-    drivers.filter((d) => !TOP_TEAMS.includes(d.constructorId))
-  );
+  // Group midfield drivers by constructor so teammates are grouped together
+  let teamGroups = $derived.by(() => {
+    const midfield = drivers.filter((d) => !TOP_TEAMS.includes(d.constructorId));
+    const groups = new Map();
+
+    for (const d of midfield) {
+      const cId = d.constructorId || 'other';
+      if (!groups.has(cId)) {
+        groups.set(cId, {
+          constructorId: cId,
+          constructorName: d.constructor || cId,
+          drivers: [],
+        });
+      }
+      groups.get(cId).drivers.push(d);
+    }
+
+    return [...groups.values()].sort((a, b) =>
+      a.constructorName.localeCompare(b.constructorName)
+    );
+  });
 
   let driversMap = $derived(
     Object.fromEntries(drivers.map((d) => [d.id, d]))
@@ -72,56 +90,96 @@ https://jai-dewani.github.io/AlternateF1/
     </p>
   </div>
 
-  <div class="podium-grid">
-    <!-- P1 Selector (Gold) -->
-    <div class="podium-col p1-col">
-      <div class="medal-badge gold">🥇 1st Place</div>
-      <div class="select-wrap" style="--team-color: {getDriverColor(driversMap[p1])}">
-        <select bind:value={p1} aria-label="1st place driver prediction">
-          {#each midfieldDrivers as d}
-            <option value={d.id}>{d.name} ({d.constructor})</option>
-          {/each}
-        </select>
+  <!-- Stepped Motorsport Podium (2 - 1 - 3 Order) -->
+  <div class="podium-stage">
+    <!-- P2 Step (Left / Silver / Medium Height) -->
+    <div class="podium-slot slot-p2" style="--team-color: {getDriverColor(driversMap[p2])}">
+      <div class="driver-card">
+        <div class="card-header">
+          <span class="medal silver">🥈 P2</span>
+          <span class="change-tag">Change ▾</span>
+        </div>
+        <div class="driver-body">
+          <div class="stripe" style="background: {getDriverColor(driversMap[p2])}"></div>
+          <div class="driver-info">
+            <div class="driver-code">{driversMap[p2]?.code ?? p2}</div>
+            <div class="driver-name">{driversMap[p2]?.name ?? p2}</div>
+            <div class="team-name">{driversMap[p2]?.constructor ?? ''}</div>
+          </div>
+        </div>
       </div>
-      <div class="driver-card-mini">
-        <span class="color-bar" style="background: {getDriverColor(driversMap[p1])}"></span>
-        <span class="driver-name">{driversMap[p1]?.name ?? p1}</span>
-        <span class="constructor-name">{driversMap[p1]?.constructor ?? ''}</span>
+      <div class="pedestal ped-2">
+        <span class="ped-num">2</span>
       </div>
+      <select bind:value={p2} class="card-select" aria-label="2nd place prediction">
+        {#each teamGroups as group}
+          <optgroup label="── {group.constructorName} ──">
+            {#each group.drivers as d}
+              <option value={d.id}>{d.name} ({d.code})</option>
+            {/each}
+          </optgroup>
+        {/each}
+      </select>
     </div>
 
-    <!-- P2 Selector (Silver) -->
-    <div class="podium-col p2-col">
-      <div class="medal-badge silver">🥈 2nd Place</div>
-      <div class="select-wrap" style="--team-color: {getDriverColor(driversMap[p2])}">
-        <select bind:value={p2} aria-label="2nd place driver prediction">
-          {#each midfieldDrivers as d}
-            <option value={d.id}>{d.name} ({d.constructor})</option>
-          {/each}
-        </select>
+    <!-- P1 Step (Center / Gold / Tallest) -->
+    <div class="podium-slot slot-p1" style="--team-color: {getDriverColor(driversMap[p1])}">
+      <div class="driver-card">
+        <div class="card-header">
+          <span class="medal gold">🥇 P1 · WINNER</span>
+          <span class="change-tag">Change ▾</span>
+        </div>
+        <div class="driver-body">
+          <div class="stripe" style="background: {getDriverColor(driversMap[p1])}"></div>
+          <div class="driver-info">
+            <div class="driver-code">{driversMap[p1]?.code ?? p1}</div>
+            <div class="driver-name">{driversMap[p1]?.name ?? p1}</div>
+            <div class="team-name">{driversMap[p1]?.constructor ?? ''}</div>
+          </div>
+        </div>
       </div>
-      <div class="driver-card-mini">
-        <span class="color-bar" style="background: {getDriverColor(driversMap[p2])}"></span>
-        <span class="driver-name">{driversMap[p2]?.name ?? p2}</span>
-        <span class="constructor-name">{driversMap[p2]?.constructor ?? ''}</span>
+      <div class="pedestal ped-1">
+        <span class="ped-num">1</span>
       </div>
+      <select bind:value={p1} class="card-select" aria-label="1st place prediction">
+        {#each teamGroups as group}
+          <optgroup label="── {group.constructorName} ──">
+            {#each group.drivers as d}
+              <option value={d.id}>{d.name} ({d.code})</option>
+            {/each}
+          </optgroup>
+        {/each}
+      </select>
     </div>
 
-    <!-- P3 Selector (Bronze) -->
-    <div class="podium-col p3-col">
-      <div class="medal-badge bronze">🥉 3rd Place</div>
-      <div class="select-wrap" style="--team-color: {getDriverColor(driversMap[p3])}">
-        <select bind:value={p3} aria-label="3rd place driver prediction">
-          {#each midfieldDrivers as d}
-            <option value={d.id}>{d.name} ({d.constructor})</option>
-          {/each}
-        </select>
+    <!-- P3 Step (Right / Bronze / Lowest Height) -->
+    <div class="podium-slot slot-p3" style="--team-color: {getDriverColor(driversMap[p3])}">
+      <div class="driver-card">
+        <div class="card-header">
+          <span class="medal bronze">🥉 P3</span>
+          <span class="change-tag">Change ▾</span>
+        </div>
+        <div class="driver-body">
+          <div class="stripe" style="background: {getDriverColor(driversMap[p3])}"></div>
+          <div class="driver-info">
+            <div class="driver-code">{driversMap[p3]?.code ?? p3}</div>
+            <div class="driver-name">{driversMap[p3]?.name ?? p3}</div>
+            <div class="team-name">{driversMap[p3]?.constructor ?? ''}</div>
+          </div>
+        </div>
       </div>
-      <div class="driver-card-mini">
-        <span class="color-bar" style="background: {getDriverColor(driversMap[p3])}"></span>
-        <span class="driver-name">{driversMap[p3]?.name ?? p3}</span>
-        <span class="constructor-name">{driversMap[p3]?.constructor ?? ''}</span>
+      <div class="pedestal ped-3">
+        <span class="ped-num">3</span>
       </div>
+      <select bind:value={p3} class="card-select" aria-label="3rd place prediction">
+        {#each teamGroups as group}
+          <optgroup label="── {group.constructorName} ──">
+            {#each group.drivers as d}
+              <option value={d.id}>{d.name} ({d.code})</option>
+            {/each}
+          </optgroup>
+        {/each}
+      </select>
     </div>
   </div>
 
@@ -147,7 +205,7 @@ https://jai-dewani.github.io/AlternateF1/
   .hero-top {
     text-align: center;
     max-width: 600px;
-    margin: 0 auto 1.5rem;
+    margin: 0 auto 1.25rem;
   }
 
   .hero-tag {
@@ -186,73 +244,193 @@ https://jai-dewani.github.io/AlternateF1/
     margin-top: .35rem;
   }
 
-  .podium-grid {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 1rem;
-    margin-bottom: 1.5rem;
+  /* ── 2 - 1 - 3 Stepped Podium ── */
+  .podium-stage {
+    display: flex;
+    align-items: flex-end;
+    justify-content: center;
+    gap: 0.85rem;
+    margin: 1.25rem auto 1.75rem;
+    max-width: 860px;
   }
 
-  .podium-col {
-    background: rgba(255, 255, 255, 0.02);
-    border: 1px solid var(--border);
-    border-radius: 8px;
-    padding: 1rem;
+  .podium-slot {
+    flex: 1;
+    position: relative;
     display: flex;
     flex-direction: column;
-    gap: .65rem;
-    transition: transform .15s, border-color .15s;
-  }
-
-  .podium-col:hover {
-    border-color: rgba(255, 255, 255, 0.18);
-  }
-
-  .medal-badge {
-    font-size: .8rem;
-    font-weight: 700;
-    letter-spacing: .04em;
-    text-transform: uppercase;
-  }
-  .medal-badge.gold   { color: #ffd700; }
-  .medal-badge.silver { color: #d1d5db; }
-  .medal-badge.bronze { color: #cd7f32; }
-
-  .select-wrap select {
-    width: 100%;
-    padding: .5rem .6rem;
-    background: #0f0f13;
-    color: #e8e8ec;
-    border: 1px solid var(--border);
-    border-left: 3px solid var(--team-color, #ff8000);
-    border-radius: 6px;
-    font-size: .82rem;
     cursor: pointer;
-  }
-  .select-wrap select:focus {
-    outline: none;
-    border-color: #ff8000;
+    transition: transform 0.2s cubic-bezier(0.2, 0, 0, 1);
   }
 
-  .driver-card-mini {
+  .podium-slot:hover {
+    transform: translateY(-4px);
+  }
+
+  /* Driver Card on top of pedestal */
+  .driver-card {
+    background: linear-gradient(180deg, #1f1f28 0%, #15151c 100%);
+    border: 1px solid var(--border);
+    border-bottom: none;
+    border-radius: 8px 8px 0 0;
+    padding: 0.9rem 1rem 0.8rem;
+    position: relative;
+    overflow: hidden;
+    transition: border-color 0.2s, box-shadow 0.2s;
+  }
+
+  .slot-p1 .driver-card {
+    border-color: rgba(255, 215, 0, 0.45);
+    box-shadow: 0 -4px 20px rgba(255, 215, 0, 0.12);
+  }
+  .slot-p2 .driver-card {
+    border-color: rgba(209, 213, 219, 0.35);
+  }
+  .slot-p3 .driver-card {
+    border-color: rgba(205, 127, 50, 0.35);
+  }
+
+  .podium-slot:hover .driver-card {
+    border-color: var(--team-color, #fff);
+  }
+
+  .card-header {
     display: flex;
     align-items: center;
-    gap: .5rem;
-    font-size: .8rem;
-    padding-top: .2rem;
+    justify-content: space-between;
+    margin-bottom: 0.6rem;
   }
-  .color-bar {
-    width: 3px;
-    height: 16px;
-    border-radius: 2px;
+
+  .medal {
+    font-size: 0.75rem;
+    font-weight: 800;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
   }
-  .driver-name {
+  .medal.gold   { color: #ffd700; }
+  .medal.silver { color: #d1d5db; }
+  .medal.bronze { color: #cd7f32; }
+
+  .change-tag {
+    font-size: 0.7rem;
+    color: var(--text-muted);
     font-weight: 600;
+    letter-spacing: 0.02em;
+    transition: color 0.15s;
+  }
+  .podium-slot:hover .change-tag {
     color: #fff;
   }
-  .constructor-name {
+
+  .driver-body {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+  }
+
+  .stripe {
+    width: 4px;
+    height: 44px;
+    border-radius: 2px;
+    flex-shrink: 0;
+    box-shadow: 0 0 10px var(--team-color, transparent);
+  }
+
+  .driver-info {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+  }
+
+  .driver-code {
+    font-size: 1.6rem;
+    font-weight: 900;
+    letter-spacing: 0.04em;
+    font-style: italic;
+    color: #fff;
+    line-height: 1;
+  }
+
+  .driver-name {
+    font-size: 0.88rem;
+    font-weight: 600;
+    color: #e2e2ec;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    margin-top: 0.2rem;
+  }
+
+  .team-name {
+    font-size: 0.72rem;
     color: var(--text-muted);
-    font-size: .75rem;
+    font-weight: 500;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  /* ── Stepped Pedestal Blocks ── */
+  .pedestal {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 0 0 6px 6px;
+    border: 1px solid var(--border);
+    position: relative;
+    overflow: hidden;
+  }
+
+  .ped-1 {
+    height: 100px;
+    background: linear-gradient(180deg, #2b240d 0%, #171305 100%);
+    border-color: rgba(255, 215, 0, 0.45);
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.45), inset 0 1px 0 rgba(255, 215, 0, 0.35);
+  }
+  .ped-2 {
+    height: 65px;
+    background: linear-gradient(180deg, #222429 0%, #121316 100%);
+    border-color: rgba(209, 213, 219, 0.35);
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.4);
+  }
+  .ped-3 {
+    height: 45px;
+    background: linear-gradient(180deg, #251b14 0%, #140d08 100%);
+    border-color: rgba(205, 127, 50, 0.35);
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.4);
+  }
+
+  .ped-num {
+    font-size: 2.2rem;
+    font-weight: 900;
+    font-style: italic;
+    opacity: 0.85;
+    letter-spacing: -0.02em;
+  }
+  .ped-1 .ped-num { color: #ffd700; font-size: 2.8rem; }
+  .ped-2 .ped-num { color: #d1d5db; }
+  .ped-3 .ped-num { color: #cd7f32; }
+
+  /* ── Invisible full-card select overlay ── */
+  .card-select {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    opacity: 0;
+    cursor: pointer;
+    z-index: 5;
+    -webkit-appearance: none;
+    appearance: none;
+  }
+  .card-select optgroup {
+    background: #18181f;
+    color: #ff8000;
+    font-weight: 700;
+  }
+  .card-select option {
+    background: #101015;
+    color: #e8e8ec;
   }
 
   .hero-actions {
@@ -301,17 +479,30 @@ https://jai-dewani.github.io/AlternateF1/
     color: #fff;
   }
 
-  @media (max-width: 768px) {
-    .podium-grid {
-      grid-template-columns: 1fr;
+  @media (max-width: 680px) {
+    .podium-stage {
+      gap: 0.4rem;
     }
-    .hero-actions {
-      flex-direction: column;
-      width: 100%;
+    .driver-card {
+      padding: 0.7rem 0.5rem;
     }
-    .post-btn, .copy-btn {
-      width: 100%;
-      justify-content: center;
+    .driver-code {
+      font-size: 1.25rem;
     }
+    .driver-name {
+      font-size: 0.75rem;
+    }
+    .team-name {
+      display: none;
+    }
+    .stripe {
+      height: 32px;
+      width: 3px;
+    }
+    .ped-1 { height: 70px; }
+    .ped-2 { height: 48px; }
+    .ped-3 { height: 32px; }
+    .ped-num { font-size: 1.6rem; }
+    .ped-1 .ped-num { font-size: 2rem; }
   }
 </style>
