@@ -1,8 +1,8 @@
 {
   "meta": {
     "season": "2026",
-    "generatedAt": "2026-10-27T11:15:01.266Z",
-    "lastRoundIncluded": 18,
+    "generatedAt": "2026-11-02T14:09:54.449Z",
+    "lastRoundIncluded": 19,
     "defaultMode": "f1_5",
     "removedDriverId": "antonelli",
     "topTeams": [
@@ -12,7 +12,7 @@
       "mercedes"
     ],
     "totalRounds": 23,
-    "completedRounds": 18
+    "completedRounds": 19
   },
   "calendar": [
     {
@@ -384,60 +384,67 @@
       "name": "Yuki Tsunoda",
       "constructor": "RB F1 Team",
       "constructorId": "rb"
+    },
+    {
+      "id": "ryo_hirakawa",
+      "code": "HIR",
+      "name": "Ryo Hirakawa",
+      "constructor": "Haas F1 Team",
+      "constructorId": "haas"
     }
   ],
   "beneficiaries": {
     "f1_5": [
       {
         "driverId": "lawson",
-        "whatIfPoints": 359,
-        "realPoints": 77,
-        "pointsGained": 282,
+        "whatIfPoints": 377,
+        "realPoints": 79,
+        "pointsGained": 298,
         "whatIfPosition": 1,
         "realPosition": 9,
         "positionsGained": 8
       },
       {
-        "driverId": "arvid_lindblad",
-        "whatIfPoints": 261,
-        "realPoints": 38,
-        "pointsGained": 223,
-        "whatIfPosition": 3,
-        "realPosition": 11,
-        "positionsGained": 8
-      },
-      {
         "driverId": "gasly",
-        "whatIfPoints": 264,
-        "realPoints": 42,
-        "pointsGained": 222,
+        "whatIfPoints": 279,
+        "realPoints": 43,
+        "pointsGained": 236,
         "whatIfPosition": 2,
         "realPosition": 10,
         "positionsGained": 8
       },
       {
-        "driverId": "bortoleto",
-        "whatIfPoints": 178,
-        "realPoints": 10,
-        "pointsGained": 168,
-        "whatIfPosition": 5,
-        "realPosition": 15,
-        "positionsGained": 10
+        "driverId": "arvid_lindblad",
+        "whatIfPoints": 262,
+        "realPoints": 38,
+        "pointsGained": 224,
+        "whatIfPosition": 3,
+        "realPosition": 11,
+        "positionsGained": 8
       },
       {
         "driverId": "colapinto",
-        "whatIfPoints": 190,
-        "realPoints": 27,
-        "pointsGained": 163,
+        "whatIfPoints": 215,
+        "realPoints": 31,
+        "pointsGained": 184,
         "whatIfPosition": 4,
         "realPosition": 12,
         "positionsGained": 8
       },
       {
+        "driverId": "bortoleto",
+        "whatIfPoints": 190,
+        "realPoints": 10,
+        "pointsGained": 180,
+        "whatIfPosition": 5,
+        "realPosition": 15,
+        "positionsGained": 10
+      },
+      {
         "driverId": "hulkenberg",
-        "whatIfPoints": 172,
+        "whatIfPoints": 176,
         "realPoints": 13,
-        "pointsGained": 159,
+        "pointsGained": 163,
         "whatIfPosition": 6,
         "realPosition": 14,
         "positionsGained": 8
@@ -462,9 +469,9 @@
       },
       {
         "driverId": "sainz",
-        "whatIfPoints": 106,
+        "whatIfPoints": 112,
         "realPoints": 7,
-        "pointsGained": 99,
+        "pointsGained": 105,
         "whatIfPosition": 9,
         "realPosition": 16,
         "positionsGained": 7
@@ -480,26 +487,26 @@
       },
       {
         "driverId": "albon",
-        "whatIfPoints": 49,
+        "whatIfPoints": 57,
         "realPoints": 5,
-        "pointsGained": 44,
+        "pointsGained": 52,
         "whatIfPosition": 11,
         "realPosition": 19,
+        "positionsGained": 8
+      },
+      {
+        "driverId": "perez",
+        "whatIfPoints": 30,
+        "realPoints": 0,
+        "pointsGained": 30,
+        "whatIfPosition": 12,
+        "realPosition": 20,
         "positionsGained": 8
       },
       {
         "driverId": "tsunoda",
         "whatIfPoints": 29,
         "realPoints": 1,
-        "pointsGained": 28,
-        "whatIfPosition": 12,
-        "realPosition": 20,
-        "positionsGained": 8
-      },
-      {
-        "driverId": "perez",
-        "whatIfPoints": 28,
-        "realPoints": 0,
         "pointsGained": 28,
         "whatIfPosition": 13,
         "realPosition": 20,
@@ -515,20 +522,29 @@
         "positionsGained": 6
       },
       {
+        "driverId": "ryo_hirakawa",
+        "whatIfPoints": 10,
+        "realPoints": 0,
+        "pointsGained": 10,
+        "whatIfPosition": 15,
+        "realPosition": 20,
+        "positionsGained": 5
+      },
+      {
         "driverId": "bottas",
         "whatIfPoints": 9,
         "realPoints": 0,
         "pointsGained": 9,
-        "whatIfPosition": 15,
+        "whatIfPosition": 16,
         "realPosition": 20,
-        "positionsGained": 5
+        "positionsGained": 4
       }
     ],
     "no_antonelli": [
       {
         "driverId": "hamilton",
-        "whatIfPoints": 291,
-        "realPoints": 241,
+        "whatIfPoints": 309,
+        "realPoints": 259,
         "pointsGained": 50,
         "whatIfPosition": 1,
         "realPosition": 3,
@@ -536,54 +552,54 @@
       },
       {
         "driverId": "leclerc",
-        "whatIfPoints": 276,
-        "realPoints": 233,
-        "pointsGained": 43,
+        "whatIfPoints": 291,
+        "realPoints": 245,
+        "pointsGained": 46,
         "whatIfPosition": 2,
         "realPosition": 5,
         "positionsGained": 3
       },
       {
         "driverId": "piastri",
-        "whatIfPoints": 179,
-        "realPoints": 144,
-        "pointsGained": 35,
+        "whatIfPoints": 187,
+        "realPoints": 150,
+        "pointsGained": 37,
         "whatIfPosition": 6,
         "realPosition": 7,
         "positionsGained": 1
       },
       {
         "driverId": "russell",
-        "whatIfPoints": 274,
-        "realPoints": 242,
-        "pointsGained": 32,
-        "whatIfPosition": 3,
-        "realPosition": 2,
+        "whatIfPoints": 284,
+        "realPoints": 250,
+        "pointsGained": 34,
+        "whatIfPosition": 4,
+        "realPosition": 4,
         "positionsGained": 0
       },
       {
         "driverId": "norris",
-        "whatIfPoints": 241,
-        "realPoints": 211,
-        "pointsGained": 30,
+        "whatIfPoints": 253,
+        "realPoints": 221,
+        "pointsGained": 32,
         "whatIfPosition": 5,
         "realPosition": 6,
         "positionsGained": 1
       },
       {
         "driverId": "max_verstappen",
-        "whatIfPoints": 265,
-        "realPoints": 236,
+        "whatIfPoints": 290,
+        "realPoints": 261,
         "pointsGained": 29,
-        "whatIfPosition": 4,
-        "realPosition": 4,
+        "whatIfPosition": 3,
+        "realPosition": 2,
         "positionsGained": 0
       },
       {
         "driverId": "lawson",
-        "whatIfPoints": 102,
-        "realPoints": 77,
-        "pointsGained": 25,
+        "whatIfPoints": 106,
+        "realPoints": 79,
+        "pointsGained": 27,
         "whatIfPosition": 8,
         "realPosition": 9,
         "positionsGained": 1
@@ -599,9 +615,9 @@
       },
       {
         "driverId": "gasly",
-        "whatIfPoints": 60,
-        "realPoints": 42,
-        "pointsGained": 18,
+        "whatIfPoints": 62,
+        "realPoints": 43,
+        "pointsGained": 19,
         "whatIfPosition": 9,
         "realPosition": 10,
         "positionsGained": 1
@@ -616,21 +632,21 @@
         "positionsGained": 1
       },
       {
+        "driverId": "colapinto",
+        "whatIfPoints": 44,
+        "realPoints": 31,
+        "pointsGained": 13,
+        "whatIfPosition": 11,
+        "realPosition": 12,
+        "positionsGained": 1
+      },
+      {
         "driverId": "hulkenberg",
         "whatIfPoints": 26,
         "realPoints": 13,
         "pointsGained": 13,
         "whatIfPosition": 13,
         "realPosition": 14,
-        "positionsGained": 1
-      },
-      {
-        "driverId": "colapinto",
-        "whatIfPoints": 38,
-        "realPoints": 27,
-        "pointsGained": 11,
-        "whatIfPosition": 11,
-        "realPosition": 12,
         "positionsGained": 1
       },
       {
@@ -644,9 +660,9 @@
       },
       {
         "driverId": "bortoleto",
-        "whatIfPoints": 19,
+        "whatIfPoints": 20,
         "realPoints": 10,
-        "pointsGained": 9,
+        "pointsGained": 10,
         "whatIfPosition": 14,
         "realPosition": 15,
         "positionsGained": 1
@@ -13290,6 +13306,638 @@
           {
             "driverId": "bortoleto",
             "points": 19,
+            "position": 14
+          },
+          {
+            "driverId": "ocon",
+            "points": 14,
+            "position": 15
+          },
+          {
+            "driverId": "sainz",
+            "points": 14,
+            "position": 15
+          },
+          {
+            "driverId": "alonso",
+            "points": 12,
+            "position": 17
+          },
+          {
+            "driverId": "albon",
+            "points": 8,
+            "position": 18
+          },
+          {
+            "driverId": "tsunoda",
+            "points": 3,
+            "position": 19
+          }
+        ],
+        "whatIfLeader": "hamilton",
+        "whatIfLeaderChanged": false,
+        "prevWhatIfLeader": "hamilton"
+      }
+    },
+    {
+      "round": 19,
+      "name": "Mexico City Grand Prix",
+      "country": "Mexico",
+      "locality": "Mexico City",
+      "circuit": "Autódromo Hermanos Rodríguez",
+      "date": "2026-11-01",
+      "hasSprint": false,
+      "realRace": [
+        {
+          "driverId": "max_verstappen",
+          "position": 1,
+          "points": 25
+        },
+        {
+          "driverId": "hamilton",
+          "position": 2,
+          "points": 18
+        },
+        {
+          "driverId": "antonelli",
+          "position": 3,
+          "points": 15
+        },
+        {
+          "driverId": "leclerc",
+          "position": 4,
+          "points": 12
+        },
+        {
+          "driverId": "norris",
+          "position": 5,
+          "points": 10
+        },
+        {
+          "driverId": "russell",
+          "position": 6,
+          "points": 8
+        },
+        {
+          "driverId": "piastri",
+          "position": 7,
+          "points": 6
+        },
+        {
+          "driverId": "colapinto",
+          "position": 8,
+          "points": 4
+        },
+        {
+          "driverId": "lawson",
+          "position": 9,
+          "points": 2
+        },
+        {
+          "driverId": "gasly",
+          "position": 10,
+          "points": 1
+        },
+        {
+          "driverId": "bortoleto",
+          "position": 11,
+          "points": 0
+        },
+        {
+          "driverId": "hadjar",
+          "position": 12,
+          "points": 0
+        },
+        {
+          "driverId": "ryo_hirakawa",
+          "position": 13,
+          "points": 0
+        },
+        {
+          "driverId": "albon",
+          "position": 14,
+          "points": 0
+        },
+        {
+          "driverId": "sainz",
+          "position": 15,
+          "points": 0
+        },
+        {
+          "driverId": "hulkenberg",
+          "position": 16,
+          "points": 0
+        },
+        {
+          "driverId": "perez",
+          "position": 17,
+          "points": 0
+        },
+        {
+          "driverId": "arvid_lindblad",
+          "position": 18,
+          "points": 0
+        },
+        {
+          "driverId": "bearman",
+          "position": 19,
+          "points": 0
+        },
+        {
+          "driverId": "bottas",
+          "position": 20,
+          "points": 0
+        },
+        {
+          "driverId": "stroll",
+          "position": 21,
+          "points": 0
+        },
+        {
+          "driverId": "alonso",
+          "position": 22,
+          "points": 0
+        }
+      ],
+      "realSprint": [],
+      "realStandings": [
+        {
+          "driverId": "antonelli",
+          "points": 380,
+          "position": 1
+        },
+        {
+          "driverId": "max_verstappen",
+          "points": 261,
+          "position": 2
+        },
+        {
+          "driverId": "hamilton",
+          "points": 259,
+          "position": 3
+        },
+        {
+          "driverId": "russell",
+          "points": 250,
+          "position": 4
+        },
+        {
+          "driverId": "leclerc",
+          "points": 245,
+          "position": 5
+        },
+        {
+          "driverId": "norris",
+          "points": 221,
+          "position": 6
+        },
+        {
+          "driverId": "piastri",
+          "points": 150,
+          "position": 7
+        },
+        {
+          "driverId": "hadjar",
+          "points": 105,
+          "position": 8
+        },
+        {
+          "driverId": "lawson",
+          "points": 79,
+          "position": 9
+        },
+        {
+          "driverId": "gasly",
+          "points": 43,
+          "position": 10
+        },
+        {
+          "driverId": "arvid_lindblad",
+          "points": 38,
+          "position": 11
+        },
+        {
+          "driverId": "colapinto",
+          "points": 31,
+          "position": 12
+        },
+        {
+          "driverId": "bearman",
+          "points": 23,
+          "position": 13
+        },
+        {
+          "driverId": "hulkenberg",
+          "points": 13,
+          "position": 14
+        },
+        {
+          "driverId": "bortoleto",
+          "points": 10,
+          "position": 15
+        },
+        {
+          "driverId": "alonso",
+          "points": 7,
+          "position": 16
+        },
+        {
+          "driverId": "ocon",
+          "points": 7,
+          "position": 16
+        },
+        {
+          "driverId": "sainz",
+          "points": 7,
+          "position": 16
+        },
+        {
+          "driverId": "albon",
+          "points": 5,
+          "position": 19
+        },
+        {
+          "driverId": "tsunoda",
+          "points": 1,
+          "position": 20
+        }
+      ],
+      "realLeader": "antonelli",
+      "f1_5": {
+        "whatIfRace": [
+          {
+            "driverId": "colapinto",
+            "position": 1,
+            "points": 25
+          },
+          {
+            "driverId": "lawson",
+            "position": 2,
+            "points": 18
+          },
+          {
+            "driverId": "gasly",
+            "position": 3,
+            "points": 15
+          },
+          {
+            "driverId": "bortoleto",
+            "position": 4,
+            "points": 12
+          },
+          {
+            "driverId": "ryo_hirakawa",
+            "position": 5,
+            "points": 10
+          },
+          {
+            "driverId": "albon",
+            "position": 6,
+            "points": 8
+          },
+          {
+            "driverId": "sainz",
+            "position": 7,
+            "points": 6
+          },
+          {
+            "driverId": "hulkenberg",
+            "position": 8,
+            "points": 4
+          },
+          {
+            "driverId": "perez",
+            "position": 9,
+            "points": 2
+          },
+          {
+            "driverId": "arvid_lindblad",
+            "position": 10,
+            "points": 1
+          },
+          {
+            "driverId": "bearman",
+            "position": 11,
+            "points": 0
+          },
+          {
+            "driverId": "bottas",
+            "position": 12,
+            "points": 0
+          },
+          {
+            "driverId": "stroll",
+            "position": 13,
+            "points": 0
+          },
+          {
+            "driverId": "alonso",
+            "position": 14,
+            "points": 0
+          }
+        ],
+        "whatIfSprint": [],
+        "whatIfStandings": [
+          {
+            "driverId": "lawson",
+            "points": 377,
+            "position": 1
+          },
+          {
+            "driverId": "gasly",
+            "points": 279,
+            "position": 2
+          },
+          {
+            "driverId": "arvid_lindblad",
+            "points": 262,
+            "position": 3
+          },
+          {
+            "driverId": "colapinto",
+            "points": 215,
+            "position": 4
+          },
+          {
+            "driverId": "bortoleto",
+            "points": 190,
+            "position": 5
+          },
+          {
+            "driverId": "hulkenberg",
+            "points": 176,
+            "position": 6
+          },
+          {
+            "driverId": "bearman",
+            "points": 155,
+            "position": 7
+          },
+          {
+            "driverId": "ocon",
+            "points": 141,
+            "position": 8
+          },
+          {
+            "driverId": "sainz",
+            "points": 112,
+            "position": 9
+          },
+          {
+            "driverId": "alonso",
+            "points": 66,
+            "position": 10
+          },
+          {
+            "driverId": "albon",
+            "points": 57,
+            "position": 11
+          },
+          {
+            "driverId": "perez",
+            "points": 30,
+            "position": 12
+          },
+          {
+            "driverId": "tsunoda",
+            "points": 29,
+            "position": 13
+          },
+          {
+            "driverId": "stroll",
+            "points": 27,
+            "position": 14
+          },
+          {
+            "driverId": "ryo_hirakawa",
+            "points": 10,
+            "position": 15
+          },
+          {
+            "driverId": "bottas",
+            "points": 9,
+            "position": 16
+          }
+        ],
+        "constructorStandings": [
+          {
+            "constructorId": "rb",
+            "points": 668,
+            "position": 1
+          },
+          {
+            "constructorId": "alpine",
+            "points": 494,
+            "position": 2
+          },
+          {
+            "constructorId": "audi",
+            "points": 366,
+            "position": 3
+          },
+          {
+            "constructorId": "haas",
+            "points": 306,
+            "position": 4
+          },
+          {
+            "constructorId": "williams",
+            "points": 169,
+            "position": 5
+          },
+          {
+            "constructorId": "aston_martin",
+            "points": 93,
+            "position": 6
+          },
+          {
+            "constructorId": "cadillac",
+            "points": 39,
+            "position": 7
+          }
+        ],
+        "whatIfLeader": "lawson",
+        "whatIfLeaderChanged": false,
+        "prevWhatIfLeader": "lawson"
+      },
+      "no_antonelli": {
+        "whatIfRace": [
+          {
+            "driverId": "max_verstappen",
+            "position": 1,
+            "points": 25
+          },
+          {
+            "driverId": "hamilton",
+            "position": 2,
+            "points": 18
+          },
+          {
+            "driverId": "leclerc",
+            "position": 3,
+            "points": 15
+          },
+          {
+            "driverId": "norris",
+            "position": 4,
+            "points": 12
+          },
+          {
+            "driverId": "russell",
+            "position": 5,
+            "points": 10
+          },
+          {
+            "driverId": "piastri",
+            "position": 6,
+            "points": 8
+          },
+          {
+            "driverId": "colapinto",
+            "position": 7,
+            "points": 6
+          },
+          {
+            "driverId": "lawson",
+            "position": 8,
+            "points": 4
+          },
+          {
+            "driverId": "gasly",
+            "position": 9,
+            "points": 2
+          },
+          {
+            "driverId": "bortoleto",
+            "position": 10,
+            "points": 1
+          },
+          {
+            "driverId": "hadjar",
+            "position": 11,
+            "points": 0
+          },
+          {
+            "driverId": "ryo_hirakawa",
+            "position": 12,
+            "points": 0
+          },
+          {
+            "driverId": "albon",
+            "position": 13,
+            "points": 0
+          },
+          {
+            "driverId": "sainz",
+            "position": 14,
+            "points": 0
+          },
+          {
+            "driverId": "hulkenberg",
+            "position": 15,
+            "points": 0
+          },
+          {
+            "driverId": "perez",
+            "position": 16,
+            "points": 0
+          },
+          {
+            "driverId": "arvid_lindblad",
+            "position": 17,
+            "points": 0
+          },
+          {
+            "driverId": "bearman",
+            "position": 18,
+            "points": 0
+          },
+          {
+            "driverId": "bottas",
+            "position": 19,
+            "points": 0
+          },
+          {
+            "driverId": "stroll",
+            "position": 20,
+            "points": 0
+          },
+          {
+            "driverId": "alonso",
+            "position": 21,
+            "points": 0
+          }
+        ],
+        "whatIfSprint": [],
+        "whatIfStandings": [
+          {
+            "driverId": "hamilton",
+            "points": 309,
+            "position": 1
+          },
+          {
+            "driverId": "leclerc",
+            "points": 291,
+            "position": 2
+          },
+          {
+            "driverId": "max_verstappen",
+            "points": 290,
+            "position": 3
+          },
+          {
+            "driverId": "russell",
+            "points": 284,
+            "position": 4
+          },
+          {
+            "driverId": "norris",
+            "points": 253,
+            "position": 5
+          },
+          {
+            "driverId": "piastri",
+            "points": 187,
+            "position": 6
+          },
+          {
+            "driverId": "hadjar",
+            "points": 125,
+            "position": 7
+          },
+          {
+            "driverId": "lawson",
+            "points": 106,
+            "position": 8
+          },
+          {
+            "driverId": "gasly",
+            "points": 62,
+            "position": 9
+          },
+          {
+            "driverId": "arvid_lindblad",
+            "points": 54,
+            "position": 10
+          },
+          {
+            "driverId": "colapinto",
+            "points": 44,
+            "position": 11
+          },
+          {
+            "driverId": "bearman",
+            "points": 33,
+            "position": 12
+          },
+          {
+            "driverId": "hulkenberg",
+            "points": 26,
+            "position": 13
+          },
+          {
+            "driverId": "bortoleto",
+            "points": 20,
             "position": 14
           },
           {
