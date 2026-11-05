@@ -1,5 +1,6 @@
 <script>
   import { getDriverColor } from '../teamColors.js';
+  import { POLL_CANDIDATE_IDS } from '../config/polls.js';
   import {
     getPollVotes,
     castVote,
@@ -12,9 +13,14 @@
 
   const TOP_TEAMS = ['red_bull', 'mclaren', 'ferrari', 'mercedes'];
 
-  let midfieldDrivers = $derived(
-    drivers.filter((d) => !TOP_TEAMS.includes(d.constructorId))
-  );
+  let pollDrivers = $derived.by(() => {
+    if (!drivers || !drivers.length) return [];
+    if (POLL_CANDIDATE_IDS && POLL_CANDIDATE_IDS.length > 0) {
+      const allowed = new Set(POLL_CANDIDATE_IDS);
+      return drivers.filter((d) => allowed.has(d.id));
+    }
+    return drivers.filter((d) => !TOP_TEAMS.includes(d.constructorId));
+  });
 
   const POLLS = {
     golden_ticket: {
@@ -106,7 +112,7 @@
         </div>
 
         <div class="candidates-grid">
-          {#each midfieldDrivers as driver}
+          {#each pollDrivers as driver}
             {@const driverId = driver.id}
             {@const color = getDriverColor(driver)}
             {@const pct = getPercentage(pollId, driverId)}
