@@ -81,15 +81,25 @@ async function main() {
   const completedRaces = allRaces.filter((r) => new Date(r.date) < now);
 
   const driversMap = new Map();
-  const calendarList = allRaces.map((r) => ({
-    round: parseInt(r.round, 10),
-    name: r.raceName,
-    country: r.Circuit.Location.country,
-    locality: r.Circuit.Location.locality,
-    circuit: r.Circuit.circuitName,
-    date: r.date,
-    hasSprint: Boolean(r.Sprint || 'Sprint' in r),
-  }));
+  const calendarList = allRaces.map((r) => {
+    let qualifyingIso = null;
+    if (r.Qualifying?.date) {
+      qualifyingIso = `${r.Qualifying.date}T${r.Qualifying.time || '14:00:00Z'}`;
+    }
+    return {
+      round: parseInt(r.round, 10),
+      name: r.raceName,
+      country: r.Circuit.Location.country,
+      locality: r.Circuit.Location.locality,
+      circuit: r.Circuit.circuitName,
+      date: r.date,
+      time: r.time || null,
+      qualifyingDate: r.Qualifying?.date || null,
+      qualifyingTime: r.Qualifying?.time || null,
+      qualifyingIso,
+      hasSprint: Boolean(r.Sprint || 'Sprint' in r),
+    };
+  });
 
   const realRoundPointsList = [];
   const f1_5RoundPointsList = [];
@@ -207,6 +217,8 @@ async function main() {
       locality: race.Circuit.Location.locality,
       circuit: race.Circuit.circuitName,
       date: race.date,
+      time: race.time || null,
+      qualifyingIso: race.Qualifying?.date ? `${race.Qualifying.date}T${race.Qualifying.time || '14:00:00Z'}` : null,
       hasSprint,
       realRace,
       realSprint,

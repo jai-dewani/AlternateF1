@@ -29,21 +29,22 @@ To allow your GitHub Pages site and localhost to talk to Appwrite:
 
 ---
 
-## 3. Create the Database & Collection
+## 3. Create the Database & Collections
 
 1. In the left sidebar, click **Databases**.
 2. Click **Create Database**:
    - **Name:** `F1 Community`
    - **Database ID:** `f1_community` (or click create and copy the generated ID).
-3. Inside this database, click **Create Collection**:
-   - **Name:** `Poll Votes`
-   - **Collection ID:** `votes`
+3. Inside this database, create two collections:
+   - Collection 1: **Poll Votes** (Collection ID: `votes`)
+   - Collection 2: **Podium Predictions** (Collection ID: `predictions`)
 
 ---
 
 ## 4. Add Collection Attributes
 
-Inside the `votes` collection, click the **Attributes** tab and add the following 4 attributes:
+### A. Inside the `votes` collection:
+Click the **Attributes** tab and add the following 4 attributes:
 
 | Type | Key | Size / Details | Required |
 |---|---|---|---|
@@ -52,19 +53,33 @@ Inside the `votes` collection, click the **Attributes** tab and add the followin
 | **Integer** | `count` | Min: `1`, Max: `1000` | No (Default: `1`) |
 | **String** | `timestamp` | Size: `64` | No |
 
+### B. Inside the `predictions` collection:
+Click the **Attributes** tab and add the following 6 attributes:
+
+| Type | Key | Size / Details | Required |
+|---|---|---|---|
+| **Integer** | `round` | Min: `1`, Max: `30` | Yes |
+| **String** | `userId` | Size: `64` | Yes |
+| **String** | `p1` | Size: `64` | Yes |
+| **String** | `p2` | Size: `64` | Yes |
+| **String** | `p3` | Size: `64` | Yes |
+| **String** | `timestamp` | Size: `64` | No |
+
 ---
 
-## 5. Set Public Permissions (Allow Visitors to Vote)
+## 5. Set Public Permissions (Allow Visitors to Vote & Predict)
 
-To allow visitors on GitHub Pages to read and submit votes without logging in:
+To allow visitors on GitHub Pages to read and submit votes/predictions without logging in:
 
-1. In the `votes` collection, click the **Settings** tab.
-2. Scroll to **Permissions**.
-3. Click **+ Add Role** → select **`Any`**.
-4. Check both:
-   - ✅ **Create** (Allows visitors to submit a vote)
-   - ✅ **Read** (Allows the site to display vote totals)
-5. Click **Update** at the bottom.
+1. For **both** the `votes` and `predictions` collections:
+2. Click the **Settings** tab.
+3. Scroll to **Permissions**.
+4. Click **+ Add Role** → select **`Any`**.
+5. Check:
+   - ✅ **Create** (Allows visitors to submit a vote or prediction)
+   - ✅ **Read** (Allows the site to display vote totals and community consensus)
+   - ✅ **Update** (Allows visitors to edit their prediction before qualifying)
+6. Click **Update** at the bottom.
 
 ---
 

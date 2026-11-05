@@ -1,7 +1,7 @@
 {
   "meta": {
     "season": "2026",
-    "generatedAt": "2026-11-03T13:14:30.016Z",
+    "generatedAt": "2026-11-05T18:33:40.583Z",
     "lastRoundIncluded": 19,
     "defaultMode": "f1_5",
     "removedDriverId": "antonelli",
@@ -22,6 +22,10 @@
       "locality": "Melbourne",
       "circuit": "Albert Park Grand Prix Circuit",
       "date": "2026-03-08",
+      "time": "04:00:00Z",
+      "qualifyingDate": "2026-03-07",
+      "qualifyingTime": "05:00:00Z",
+      "qualifyingIso": "2026-03-07T05:00:00Z",
       "hasSprint": false
     },
     {
@@ -31,6 +35,10 @@
       "locality": "Shanghai",
       "circuit": "Shanghai International Circuit",
       "date": "2026-03-15",
+      "time": "07:00:00Z",
+      "qualifyingDate": "2026-03-14",
+      "qualifyingTime": "07:00:00Z",
+      "qualifyingIso": "2026-03-14T07:00:00Z",
       "hasSprint": true
     },
     {
@@ -40,6 +48,10 @@
       "locality": "Suzuka",
       "circuit": "Suzuka Circuit",
       "date": "2026-03-29",
+      "time": "05:00:00Z",
+      "qualifyingDate": "2026-03-28",
+      "qualifyingTime": "06:00:00Z",
+      "qualifyingIso": "2026-03-28T06:00:00Z",
       "hasSprint": false
     },
     {
@@ -49,6 +61,10 @@
       "locality": "Miami",
       "circuit": "Miami International Autodrome",
       "date": "2026-05-03",
+      "time": "20:00:00Z",
+      "qualifyingDate": "2026-05-02",
+      "qualifyingTime": "20:00:00Z",
+      "qualifyingIso": "2026-05-02T20:00:00Z",
       "hasSprint": true
     },
     {
@@ -58,6 +74,10 @@
       "locality": "Montreal",
       "circuit": "Circuit Gilles Villeneuve",
       "date": "2026-05-24",
+      "time": "20:00:00Z",
+      "qualifyingDate": "2026-05-23",
+      "qualifyingTime": "20:00:00Z",
+      "qualifyingIso": "2026-05-23T20:00:00Z",
       "hasSprint": true
     },
     {
@@ -67,6 +87,10 @@
       "locality": "Monte Carlo",
       "circuit": "Circuit de Monaco",
       "date": "2026-06-07",
+      "time": "13:00:00Z",
+      "qualifyingDate": "2026-06-06",
+      "qualifyingTime": "14:00:00Z",
+      "qualifyingIso": "2026-06-06T14:00:00Z",
       "hasSprint": false
     },
     {
@@ -76,6 +100,10 @@
       "locality": "Barcelona",
       "circuit": "Circuit de Barcelona-Catalunya",
       "date": "2026-06-14",
+      "time": "13:00:00Z",
+      "qualifyingDate": "2026-06-13",
+      "qualifyingTime": "14:00:00Z",
+      "qualifyingIso": "2026-06-13T14:00:00Z",
       "hasSprint": false
     },
     {
@@ -85,6 +113,10 @@
       "locality": "Spielberg",
       "circuit": "Red Bull Ring",
       "date": "2026-06-28",
+      "time": "13:00:00Z",
+      "qualifyingDate": "2026-06-27",
+      "qualifyingTime": "14:00:00Z",
+      "qualifyingIso": "2026-06-27T14:00:00Z",
       "hasSprint": false
     },
     {
@@ -94,6 +126,10 @@
       "locality": "Silverstone",
       "circuit": "Silverstone Circuit",
       "date": "2026-07-05",
+      "time": "14:00:00Z",
+      "qualifyingDate": "2026-07-04",
+      "qualifyingTime": "15:00:00Z",
+      "qualifyingIso": "2026-07-04T15:00:00Z",
       "hasSprint": true
     },
     {
@@ -103,6 +139,10 @@
       "locality": "Spa",
       "circuit": "Circuit de Spa-Francorchamps",
       "date": "2026-07-19",
+      "time": "13:00:00Z",
+      "qualifyingDate": "2026-07-18",
+      "qualifyingTime": "14:00:00Z",
+      "qualifyingIso": "2026-07-18T14:00:00Z",
       "hasSprint": false
     },
     {
@@ -112,6 +152,10 @@
       "locality": "Budapest",
       "circuit": "Hungaroring",
       "date": "2026-07-26",
+      "time": "13:00:00Z",
+      "qualifyingDate": "2026-07-25",
+      "qualifyingTime": "14:00:00Z",
+      "qualifyingIso": "2026-07-25T14:00:00Z",
       "hasSprint": false
     },
     {
@@ -121,6 +165,10 @@
       "locality": "Zandvoort",
       "circuit": "Circuit Park Zandvoort",
       "date": "2026-08-23",
+      "time": "13:00:00Z",
+      "qualifyingDate": "2026-08-22",
+      "qualifyingTime": "14:00:00Z",
+      "qualifyingIso": "2026-08-22T14:00:00Z",
       "hasSprint": true
     },
     {
@@ -130,6 +178,10 @@
       "locality": "Monza",
       "circuit": "Autodromo Nazionale di Monza",
       "date": "2026-09-06",
+      "time": "13:00:00Z",
+      "qualifyingDate": "2026-09-05",
+      "qualifyingTime": "14:00:00Z",
+      "qualifyingIso": "2026-09-05T14:00:00Z",
       "hasSprint": false
     },
     {
@@ -139,6 +191,10 @@
       "locality": "Madrid",
       "circuit": "Madring",
       "date": "2026-09-13",
+      "time": "13:00:00Z",
+      "qualifyingDate": "2026-09-12",
+      "qualifyingTime": "14:00:00Z",
+      "qualifyingIso": "2026-09-12T14:00:00Z",
       "hasSprint": false
     },
     {
@@ -148,6 +204,10 @@
       "locality": "Baku",
       "circuit": "Baku City Circuit",
       "date": "2026-09-26",
+      "time": "11:00:00Z",
+      "qualifyingDate": "2026-09-25",
+      "qualifyingTime": "12:00:00Z",
+      "qualifyingIso": "2026-09-25T12:00:00Z",
       "hasSprint": false
     },
     {
@@ -157,6 +217,10 @@
       "locality": "Kuala Lumpur",
       "circuit": "Sepang International Circuit",
       "date": "2026-10-04",
+      "time": "07:00:00Z",
+      "qualifyingDate": "2026-10-03",
+      "qualifyingTime": "08:00:00Z",
+      "qualifyingIso": "2026-10-03T08:00:00Z",
       "hasSprint": false
     },
     {
@@ -166,6 +230,10 @@
       "locality": "Marina Bay",
       "circuit": "Marina Bay Street Circuit",
       "date": "2026-10-11",
+      "time": "12:00:00Z",
+      "qualifyingDate": "2026-10-10",
+      "qualifyingTime": "13:00:00Z",
+      "qualifyingIso": "2026-10-10T13:00:00Z",
       "hasSprint": true
     },
     {
@@ -175,6 +243,10 @@
       "locality": "Austin",
       "circuit": "Circuit of the Americas",
       "date": "2026-10-25",
+      "time": "20:00:00Z",
+      "qualifyingDate": "2026-10-24",
+      "qualifyingTime": "21:00:00Z",
+      "qualifyingIso": "2026-10-24T21:00:00Z",
       "hasSprint": false
     },
     {
@@ -184,6 +256,10 @@
       "locality": "Mexico City",
       "circuit": "Autódromo Hermanos Rodríguez",
       "date": "2026-11-01",
+      "time": "20:00:00Z",
+      "qualifyingDate": "2026-10-31",
+      "qualifyingTime": "21:00:00Z",
+      "qualifyingIso": "2026-10-31T21:00:00Z",
       "hasSprint": false
     },
     {
@@ -193,6 +269,10 @@
       "locality": "São Paulo",
       "circuit": "Autódromo José Carlos Pace",
       "date": "2026-11-08",
+      "time": "17:00:00Z",
+      "qualifyingDate": "2026-11-07",
+      "qualifyingTime": "18:00:00Z",
+      "qualifyingIso": "2026-11-07T18:00:00Z",
       "hasSprint": false
     },
     {
@@ -202,6 +282,10 @@
       "locality": "Las Vegas",
       "circuit": "Las Vegas Strip Street Circuit",
       "date": "2026-11-22",
+      "time": "04:00:00Z",
+      "qualifyingDate": "2026-11-21",
+      "qualifyingTime": "04:00:00Z",
+      "qualifyingIso": "2026-11-21T04:00:00Z",
       "hasSprint": false
     },
     {
@@ -211,6 +295,10 @@
       "locality": "Lusail",
       "circuit": "Lusail International Circuit",
       "date": "2026-11-29",
+      "time": "16:00:00Z",
+      "qualifyingDate": "2026-11-28",
+      "qualifyingTime": "18:00:00Z",
+      "qualifyingIso": "2026-11-28T18:00:00Z",
       "hasSprint": false
     },
     {
@@ -220,6 +308,10 @@
       "locality": "Abu Dhabi",
       "circuit": "Yas Marina Circuit",
       "date": "2026-12-06",
+      "time": "13:00:00Z",
+      "qualifyingDate": "2026-12-05",
+      "qualifyingTime": "14:00:00Z",
+      "qualifyingIso": "2026-12-05T14:00:00Z",
       "hasSprint": false
     }
   ],
@@ -722,6 +814,8 @@
       "locality": "Melbourne",
       "circuit": "Albert Park Grand Prix Circuit",
       "date": "2026-03-08",
+      "time": "04:00:00Z",
+      "qualifyingIso": "2026-03-07T05:00:00Z",
       "hasSprint": false,
       "realRace": [
         {
@@ -1224,6 +1318,8 @@
       "locality": "Shanghai",
       "circuit": "Shanghai International Circuit",
       "date": "2026-03-15",
+      "time": "07:00:00Z",
+      "qualifyingIso": "2026-03-14T07:00:00Z",
       "hasSprint": true,
       "realRace": [
         {
@@ -2079,6 +2175,8 @@
       "locality": "Suzuka",
       "circuit": "Suzuka Circuit",
       "date": "2026-03-29",
+      "time": "05:00:00Z",
+      "qualifyingIso": "2026-03-28T06:00:00Z",
       "hasSprint": false,
       "realRace": [
         {
@@ -2661,6 +2759,8 @@
       "locality": "Miami",
       "circuit": "Miami International Autodrome",
       "date": "2026-05-03",
+      "time": "20:00:00Z",
+      "qualifyingIso": "2026-05-02T20:00:00Z",
       "hasSprint": true,
       "realRace": [
         {
@@ -3546,6 +3646,8 @@
       "locality": "Montreal",
       "circuit": "Circuit Gilles Villeneuve",
       "date": "2026-05-24",
+      "time": "20:00:00Z",
+      "qualifyingIso": "2026-05-23T20:00:00Z",
       "hasSprint": true,
       "realRace": [
         {
@@ -4431,6 +4533,8 @@
       "locality": "Monte Carlo",
       "circuit": "Circuit de Monaco",
       "date": "2026-06-07",
+      "time": "13:00:00Z",
+      "qualifyingIso": "2026-06-06T14:00:00Z",
       "hasSprint": false,
       "realRace": [
         {
@@ -5038,6 +5142,8 @@
       "locality": "Barcelona",
       "circuit": "Circuit de Barcelona-Catalunya",
       "date": "2026-06-14",
+      "time": "13:00:00Z",
+      "qualifyingIso": "2026-06-13T14:00:00Z",
       "hasSprint": false,
       "realRace": [
         {
@@ -5645,6 +5751,8 @@
       "locality": "Spielberg",
       "circuit": "Red Bull Ring",
       "date": "2026-06-28",
+      "time": "13:00:00Z",
+      "qualifyingIso": "2026-06-27T14:00:00Z",
       "hasSprint": false,
       "realRace": [
         {
@@ -6252,6 +6360,8 @@
       "locality": "Silverstone",
       "circuit": "Silverstone Circuit",
       "date": "2026-07-05",
+      "time": "14:00:00Z",
+      "qualifyingIso": "2026-07-04T15:00:00Z",
       "hasSprint": true,
       "realRace": [
         {
@@ -7147,6 +7257,8 @@
       "locality": "Spa",
       "circuit": "Circuit de Spa-Francorchamps",
       "date": "2026-07-19",
+      "time": "13:00:00Z",
+      "qualifyingIso": "2026-07-18T14:00:00Z",
       "hasSprint": false,
       "realRace": [
         {
@@ -7754,6 +7866,8 @@
       "locality": "Budapest",
       "circuit": "Hungaroring",
       "date": "2026-07-26",
+      "time": "13:00:00Z",
+      "qualifyingIso": "2026-07-25T14:00:00Z",
       "hasSprint": false,
       "realRace": [
         {
@@ -8366,6 +8480,8 @@
       "locality": "Zandvoort",
       "circuit": "Circuit Park Zandvoort",
       "date": "2026-08-23",
+      "time": "13:00:00Z",
+      "qualifyingIso": "2026-08-22T14:00:00Z",
       "hasSprint": true,
       "realRace": [
         {
@@ -9286,6 +9402,8 @@
       "locality": "Monza",
       "circuit": "Autodromo Nazionale di Monza",
       "date": "2026-09-06",
+      "time": "13:00:00Z",
+      "qualifyingIso": "2026-09-05T14:00:00Z",
       "hasSprint": false,
       "realRace": [
         {
@@ -9918,6 +10036,8 @@
       "locality": "Madrid",
       "circuit": "Madring",
       "date": "2026-09-13",
+      "time": "13:00:00Z",
+      "qualifyingIso": "2026-09-12T14:00:00Z",
       "hasSprint": false,
       "realRace": [
         {
@@ -10550,6 +10670,8 @@
       "locality": "Baku",
       "circuit": "Baku City Circuit",
       "date": "2026-09-26",
+      "time": "11:00:00Z",
+      "qualifyingIso": "2026-09-25T12:00:00Z",
       "hasSprint": false,
       "realRace": [
         {
@@ -11177,6 +11299,8 @@
       "locality": "Kuala Lumpur",
       "circuit": "Sepang International Circuit",
       "date": "2026-10-04",
+      "time": "07:00:00Z",
+      "qualifyingIso": "2026-10-03T08:00:00Z",
       "hasSprint": false,
       "realRace": [
         {
@@ -11804,6 +11928,8 @@
       "locality": "Marina Bay",
       "circuit": "Marina Bay Street Circuit",
       "date": "2026-10-11",
+      "time": "12:00:00Z",
+      "qualifyingIso": "2026-10-10T13:00:00Z",
       "hasSprint": true,
       "realRace": [
         {
@@ -12719,6 +12845,8 @@
       "locality": "Austin",
       "circuit": "Circuit of the Americas",
       "date": "2026-10-25",
+      "time": "20:00:00Z",
+      "qualifyingIso": "2026-10-24T21:00:00Z",
       "hasSprint": false,
       "realRace": [
         {
@@ -13346,6 +13474,8 @@
       "locality": "Mexico City",
       "circuit": "Autódromo Hermanos Rodríguez",
       "date": "2026-11-01",
+      "time": "20:00:00Z",
+      "qualifyingIso": "2026-10-31T21:00:00Z",
       "hasSprint": false,
       "realRace": [
         {
