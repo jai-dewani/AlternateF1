@@ -6,16 +6,19 @@
   import BumpChart          from './lib/components/BumpChart.svelte';
   import PodiumHero         from './lib/components/PodiumHero.svelte';
   import CommunityPolls     from './lib/components/CommunityPolls.svelte';
+  import DriverStatsView    from './lib/components/DriverStatsView.svelte';
 
   // ── State ───────────────────────────────────────────────────────────────────
   let season        = $state(null);
   let loading       = $state(true);
   let fetchError    = $state(null);
   let selectedRound = $state(1);
-  let activeMode    = $state('f1_5');   // 'f1_5' (default) | 'no_antonelli'
-  let showWhatIf    = $state(true);
-  let activeTab     = $state('race');   // 'race' | 'sprint'
-  let activeChart   = $state('line');   // 'line' | 'bump'
+
+  // Active page tab: 'home' | 'standings' | 'stats' | 'results'
+  let activePage    = $state('home');
+
+  let activeTab     = $state('race');   // 'race' | 'sprint' (for results)
+  let activeChart   = $state('line');   // 'line' | 'bump' (for standings)
 
   const TOP_TEAMS = ['red_bull', 'mclaren', 'ferrari', 'mercedes'];
 
@@ -26,7 +29,7 @@
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
       const data = await res.json();
       season = data;
-      selectedRound = data.rounds.length;  // default to latest round
+      selectedRound = data.rounds.length;  // default to latest completed round
     } catch (e) {
       fetchError = e.message;
     } finally {
@@ -36,11 +39,11 @@
 
   $effect(() => { loadSeason(); });
 
-  // ── Normalize rounds for active mode ─────────────────────────────────────────
+  // ── Always normalize rounds for F1.5 mode ───────────────────────────────────
   let modeRounds = $derived.by(() => {
     if (!season) return [];
     return season.rounds.map((r) => {
-      const modeData = r[activeMode] || {};
+      const modeData = r.f1_5 || {};
       return {
         ...r,
         whatIfRace: modeData.whatIfRace || r.whatIfRace || [],
@@ -59,10 +62,7 @@
 
   let activeDrivers = $derived.by(() => {
     if (!season) return [];
-    if (activeMode === 'f1_5') {
-      return season.drivers.filter((d) => !TOP_TEAMS.includes(d.constructorId));
-    }
-    return season.drivers;
+    return season.drivers.filter((d) => !TOP_TEAMS.includes(d.constructorId));
   });
 
   let driversMap = $derived(
@@ -74,8 +74,10 @@
   // ── Keyboard navigation ──────────────────────────────────────────────────────
   function handleKey(e) {
     if (!season) return;
-    if (e.key === 'ArrowLeft'  && selectedRound > 1)                   selectedRound--;
-    if (e.key === 'ArrowRight' && selectedRound < season.rounds.length) selectedRound++;
+    if (activePage === 'results' || activePage === 'standings') {
+      if (e.key === 'ArrowLeft'  && selectedRound > 1)                   selectedRound--;
+      if (e.key === 'ArrowRight' && selectedRound < season.rounds.length) selectedRound++;
+    }
   }
 </script>
 
@@ -84,7 +86,7 @@
 {#if loading}
   <div class="center-fill">
     <div class="spinner"></div>
-    <p>Loading season data…</p>
+    <p>Loading Formula 1.5 season data…</p>
   </div>
 
 {:else if fetchError}
@@ -97,156 +99,217 @@
 {:else if season}
   <div class="app">
 
-    <!-- ── Header ── -->
-    <header>
-      <div class="header-inner">
-        <div>
-          <div class="title-row">
-            <h1>
-              {#if activeMode === 'f1_5'}
-                FORMULA <span class="year">1.5</span>
-              {:else}
-                F1 <span class="year">{season.meta.season}</span>
-              {/if}
-            </h1>
+    <!-- ── F1-Style Global Navigation Bar ── -->
+    <nav class="f1-navbar" aria-label="Main Navigation">
+      <div class="f1-nav-inner">
+        <!-- Brand Logo -->
+        <button class="nav-brand" onclick={() => { activePage = 'home'; }} aria-label="Formula 1.5 Home">
+          <svg class="f1-logo-svg" viewBox="0 0 100 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M0 24L12 0H38L26 24H0Z" fill="#E10600"/>
+            <path d="M30 24L42 0H52L40 24H30Z" fill="#E10600"/>
+            <path d="M46 12L52 0H96L92 8H62L58 16H84L80 24H40L46 12Z" fill="#E10600"/>
+          </svg>
+          <span class="brand-text">1.5</span>
+        </button>
 
-            <!-- Mode Switcher -->
-            <div class="mode-switcher" role="tablist" aria-label="Select Championship Mode">
-              <button
-                class:active={activeMode === 'f1_5'}
-                onclick={() => { activeMode = 'f1_5'; }}
-                role="tab"
-                aria-selected={activeMode === 'f1_5'}
-              >
-                🏆 Formula 1.5
-              </button>
-              <button
-                class:active={activeMode === 'no_antonelli'}
-                onclick={() => { activeMode = 'no_antonelli'; }}
-                role="tab"
-                aria-selected={activeMode === 'no_antonelli'}
-              >
-                🔮 No Antonelli
-              </button>
+        <!-- Navigation Tabs with F1-style speed stripes -->
+        <div class="nav-tabs">
+          <!-- Home Tab -->
+          <div class="nav-tab-wrapper">
+            <div class="speed-stripes">
+              <span class="stripe"></span>
+              <span class="stripe"></span>
             </div>
+            <button
+              class="nav-tab-btn"
+              class:active={activePage === 'home'}
+              onclick={() => { activePage = 'home'; }}
+            >
+              Home
+            </button>
           </div>
 
+          <!-- Standings Tab -->
+          <div class="nav-tab-wrapper">
+            <div class="speed-stripes">
+              <span class="stripe"></span>
+              <span class="stripe"></span>
+            </div>
+            <button
+              class="nav-tab-btn"
+              class:active={activePage === 'standings'}
+              onclick={() => { activePage = 'standings'; }}
+            >
+              Standings
+            </button>
+          </div>
+
+          <!-- Stats Tab -->
+          <div class="nav-tab-wrapper">
+            <div class="speed-stripes">
+              <span class="stripe"></span>
+              <span class="stripe"></span>
+            </div>
+            <button
+              class="nav-tab-btn"
+              class:active={activePage === 'stats'}
+              onclick={() => { activePage = 'stats'; }}
+            >
+              Stats
+            </button>
+          </div>
+
+          <!-- Results Tab -->
+          <div class="nav-tab-wrapper">
+            <div class="speed-stripes">
+              <span class="stripe"></span>
+              <span class="stripe"></span>
+            </div>
+            <button
+              class="nav-tab-btn"
+              class:active={activePage === 'results'}
+              onclick={() => { activePage = 'results'; }}
+            >
+              Results
+            </button>
+          </div>
+        </div>
+
+        <!-- Meta status badge on far right -->
+        <div class="nav-meta">
+          <span class="season-badge">{season.meta.season} Season</span>
+          <span class="round-counter">{season.meta.completedRounds}/{season.meta.totalRounds} Rds</span>
+        </div>
+      </div>
+    </nav>
+
+    <!-- ── Header Info ── -->
+    <header class="app-subhead">
+      <div class="title-row">
+        <div>
+          <h1>FORMULA <span class="year">1.5</span></h1>
           <p class="subtitle">
-            {#if activeMode === 'f1_5'}
-              The 2026 Midfield World Championship <span class="rule-hint">(Excluding Red Bull, McLaren, Ferrari & Mercedes)</span>
-            {:else}
-              What If <span class="removed">Antonelli</span> Never Raced in 2026?
-            {/if}
+            The Midfield World Championship <span class="rule-hint">(Excluding Red Bull, McLaren, Ferrari & Mercedes)</span>
           </p>
         </div>
 
-        <div class="header-actions">
+        <div class="header-status">
           <p class="updated">
             Updated {new Date(season.meta.generatedAt).toLocaleDateString('en-GB',
               { day: 'numeric', month: 'short', year: 'numeric' })}
-            · {season.meta.completedRounds}/{season.meta.totalRounds} rounds
           </p>
         </div>
       </div>
     </header>
 
     <main>
+      <!-- ── Tab 1: Home (Actionable Features: Podium Predictor & Community Polls) ── -->
+      {#if activePage === 'home'}
+        <div class="page-view home-view">
+          <!-- Hero: Podium Predictor Widget -->
+          <PodiumHero drivers={season.drivers} calendar={season.calendar || []} />
 
-      <!-- ── Hero: Podium Predictor ── -->
-      <PodiumHero drivers={season.drivers} calendar={season.calendar || []} />
-
-      <!-- ── Race Navigator ── -->
-      <section>
-        <RaceNavigator
-          rounds={modeRounds}
-          {selectedRound}
-          {driversMap}
-          onSelect={(r) => { selectedRound = r; }}
-        />
-      </section>
-
-      <!-- ── Toggle ── -->
-      <div class="toggle-row">
-        <label class="toggle">
-          <input type="checkbox" bind:checked={showWhatIf} />
-          <span class="pill" class:active={showWhatIf}>
-            {showWhatIf ? (activeMode === 'f1_5' ? '🏆 F1.5 Re-scored' : '🔮 What-If Antonelli') : '📊 Official 2026'}
-          </span>
-        </label>
-        <span class="toggle-hint">
-          {#if activeMode === 'f1_5'}
-            Top 4 teams removed · Midfield P1 receives 25 pts, P2 gets 18 pts
-          {:else}
-            Antonelli removed · everyone behind him moves up one place
-          {/if}
-        </span>
-      </div>
-
-      <!-- ── Race result + Standings ── -->
-      <div class="two-col">
-        <div class="card">
-          {#if currentRound}
-            <RaceResultTable
-              round={currentRound}
-              {driversMap}
-              {showWhatIf}
-              {activeTab}
-              onTabChange={(t) => { activeTab = t; }}
-            />
-          {/if}
-        </div>
-        <div class="card">
-          {#if currentRound}
-            <StandingsTable
-              round={currentRound}
-              {prevRound}
-              {driversMap}
-              {showWhatIf}
-              isF15={activeMode === 'f1_5'}
-            />
-          {/if}
-        </div>
-      </div>
-
-      <!-- ── Charts ── -->
-      <div class="card chart-card">
-        <div class="chart-tabs">
-          <button
-            class:active={activeChart === 'line'}
-            onclick={() => { activeChart = 'line'; }}
-          >Points Over Season ({activeMode === 'f1_5' ? 'Midfield' : 'All'})</button>
-          <button
-            class:active={activeChart === 'bump'}
-            onclick={() => { activeChart = 'bump'; }}
-          >Championship Positions</button>
+          <!-- Community Polls Widget -->
+          <CommunityPolls drivers={season.drivers} />
         </div>
 
-        {#if activeChart === 'line'}
-          <PointsLineChart
+      <!-- ── Tab 2: Standings (Drivers & Constructors Standings + Progression Charts) ── -->
+      {:else if activePage === 'standings'}
+        <div class="page-view standings-view">
+          <div class="section-banner">
+            <div>
+              <h2>Championship Standings & Trajectory</h2>
+              <p class="banner-desc">Points and positions re-scored for midfield competitors only.</p>
+            </div>
+          </div>
+
+          <!-- Standings Table (Drivers & Constructors) -->
+          <div class="card">
+            {#if currentRound}
+              <StandingsTable
+                round={currentRound}
+                {prevRound}
+                {driversMap}
+                showWhatIf={true}
+                isF15={true}
+              />
+            {/if}
+          </div>
+
+          <!-- Championship Charts (Points Progression & Bump Chart) -->
+          <div class="card chart-card">
+            <div class="chart-tabs">
+              <button
+                class:active={activeChart === 'line'}
+                onclick={() => { activeChart = 'line'; }}
+              >Points Over Season (Midfield)</button>
+              <button
+                class:active={activeChart === 'bump'}
+                onclick={() => { activeChart = 'bump'; }}
+              >Championship Positions</button>
+            </div>
+
+            {#if activeChart === 'line'}
+              <PointsLineChart
+                rounds={modeRounds}
+                drivers={activeDrivers}
+                {selectedRound}
+                showWhatIf={true}
+                onRoundSelect={(r) => { selectedRound = r; }}
+              />
+            {:else}
+              <BumpChart
+                rounds={modeRounds}
+                drivers={activeDrivers}
+                {selectedRound}
+                showWhatIf={true}
+                onRoundSelect={(r) => { selectedRound = r; }}
+              />
+            {/if}
+          </div>
+        </div>
+
+      <!-- ── Tab 3: Stats (Driver Performance Metrics, Rankings & Contenders) ── -->
+      {:else if activePage === 'stats'}
+        <div class="page-view stats-view">
+          <DriverStatsView
             rounds={modeRounds}
             drivers={activeDrivers}
-            {selectedRound}
-            {showWhatIf}
-            onRoundSelect={(r) => { selectedRound = r; }}
+            {driversMap}
           />
-        {:else}
-          <BumpChart
-            rounds={modeRounds}
-            drivers={activeDrivers}
-            {selectedRound}
-            {showWhatIf}
-            onRoundSelect={(r) => { selectedRound = r; }}
-          />
-        {/if}
-      </div>
+        </div>
 
-      <!-- ── Community Polls ── -->
-      <CommunityPolls drivers={season.drivers} />
+      <!-- ── Tab 4: Results (Race-by-Race Navigator & Finishing Orders) ── -->
+      {:else if activePage === 'results'}
+        <div class="page-view results-view">
+          <!-- Round selector timeline & navigator -->
+          <section>
+            <RaceNavigator
+              rounds={modeRounds}
+              {selectedRound}
+              {driversMap}
+              onSelect={(r) => { selectedRound = r; }}
+            />
+          </section>
 
+          <!-- Race / Sprint result table -->
+          <div class="card">
+            {#if currentRound}
+              <RaceResultTable
+                round={currentRound}
+                {driversMap}
+                showWhatIf={true}
+                {activeTab}
+                onTabChange={(t) => { activeTab = t; }}
+              />
+            {/if}
+          </div>
+        </div>
+      {/if}
     </main>
 
     <footer>
-      Formula 1.5 & What-If Championship Engine · Data from <a href="https://api.jolpi.ca" target="_blank" rel="noopener">Jolpica F1 API</a> · Built with Svelte 5 + Vite.
+      Formula 1.5 Championship Engine · Data from <a href="https://api.jolpi.ca" target="_blank" rel="noopener">Jolpica F1 API</a> · Built with Svelte 5 + Vite.
     </footer>
 
   </div>
@@ -306,14 +369,177 @@
   .hint { font-size: .8rem; }
 
   /* ── Layout ─────────────────────────────────────────────────────────────── */
-  .app { max-width: 1400px; margin: 0 auto; padding: 0 1rem 3rem; }
+  .app {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 0 1rem 3rem;
+  }
 
-  header {
-    padding: 1.5rem 0 1.25rem;
+  /* ── F1-Style Global Navigation Bar ── */
+  .f1-navbar {
+    background: #15151e;
+    border-bottom: 1px solid #232330;
+    margin: 0 -1rem 1.25rem;
+    padding: 0 1rem;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
+  }
+
+  .f1-nav-inner {
+    max-width: 1400px;
+    margin: 0 auto;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    height: 54px;
+    gap: 1.5rem;
+  }
+
+  .nav-brand {
+    background: none;
+    border: none;
+    display: flex;
+    align-items: center;
+    gap: 0.35rem;
+    cursor: pointer;
+    padding: 0.3rem 0;
+  }
+
+  .f1-logo-svg {
+    height: 22px;
+    width: auto;
+    display: block;
+  }
+
+  .brand-text {
+    font-size: 1.35rem;
+    font-weight: 900;
+    font-style: italic;
+    color: #fff;
+    letter-spacing: -0.04em;
+    line-height: 1;
+  }
+
+  /* ── Tabs Container ── */
+  .nav-tabs {
+    display: flex;
+    align-items: center;
+    height: 100%;
+    overflow-x: auto;
+    scrollbar-width: none;
+  }
+  .nav-tabs::-webkit-scrollbar {
+    display: none;
+  }
+
+  .nav-tab-wrapper {
+    position: relative;
+    display: flex;
+    align-items: center;
+    height: 100%;
+  }
+
+  /* Speed stripes in the background */
+  .speed-stripes {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    pointer-events: none;
+    opacity: 0.35;
+  }
+
+  .speed-stripes .stripe {
+    width: 22px;
+    height: 32px;
+    background: #252533;
+    transform: skewX(-24deg);
+    border-radius: 1px;
+    transition: opacity 0.2s, background 0.2s;
+  }
+
+  .nav-tab-wrapper:hover .speed-stripes .stripe {
+    background: #323244;
+    opacity: 0.6;
+  }
+
+  .nav-tab-btn {
+    background: transparent;
+    border: none;
+    color: var(--text-muted);
+    font-size: 0.95rem;
+    font-weight: 700;
+    letter-spacing: 0.02em;
+    cursor: pointer;
+    padding: 0 1.35rem;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    position: relative;
+    z-index: 1;
+    transition: color 0.15s;
+    white-space: nowrap;
+  }
+
+  .nav-tab-btn:hover {
+    color: #ffffff;
+  }
+
+  .nav-tab-btn.active {
+    color: #ffffff;
+    font-weight: 800;
+  }
+
+  /* Active bottom red underline */
+  .nav-tab-btn.active::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0.8rem;
+    right: 0.8rem;
+    height: 3px;
+    background: var(--accent);
+    box-shadow: 0 0 10px rgba(225, 6, 0, 0.7);
+    border-radius: 2px 2px 0 0;
+  }
+
+  .nav-meta {
+    display: flex;
+    align-items: center;
+    gap: 0.65rem;
+    flex-shrink: 0;
+  }
+
+  .season-badge {
+    background: rgba(225, 6, 0, 0.15);
+    color: #ff4742;
+    border: 1px solid rgba(225, 6, 0, 0.3);
+    font-size: 0.72rem;
+    font-weight: 800;
+    padding: 0.25rem 0.65rem;
+    border-radius: 4px;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+
+  .round-counter {
+    font-size: 0.78rem;
+    font-weight: 700;
+    color: var(--text-muted);
+  }
+
+  /* ── Header Subhead ── */
+  .app-subhead {
+    padding: 0.75rem 0 1.25rem;
     border-bottom: 1px solid var(--border);
     margin-bottom: 1.25rem;
   }
-  .header-inner {
+
+  .title-row {
     display: flex;
     align-items: flex-end;
     justify-content: space-between;
@@ -321,63 +547,76 @@
     flex-wrap: wrap;
   }
 
-  .title-row {
-    display: flex;
-    align-items: center;
-    gap: 1rem;
-    flex-wrap: wrap;
+  h1 {
+    font-size: 2.1rem;
+    font-weight: 900;
+    letter-spacing: -.04em;
+    line-height: 1;
   }
-  h1 { font-size: 2.2rem; font-weight: 900; letter-spacing: -.04em; line-height: 1; }
-  .year { color: var(--accent-2); }
-  .subtitle { font-size: 0.95rem; color: var(--text-muted); margin-top: .4rem; }
-  .rule-hint { color: #aaaab8; font-size: 0.82rem; }
-  .removed { color: var(--accent); font-weight: 600; }
 
-  .mode-switcher {
-    display: flex;
-    background: var(--bg-card);
-    border: 1px solid var(--border);
-    border-radius: 999px;
-    padding: 3px;
+  .year {
+    color: var(--accent-2);
   }
-  .mode-switcher button {
-    background: none;
-    border: none;
+
+  .subtitle {
+    font-size: 0.92rem;
     color: var(--text-muted);
-    font-size: 0.82rem;
-    font-weight: 600;
-    padding: 0.35rem 0.9rem;
-    border-radius: 999px;
-    cursor: pointer;
-    transition: all 0.15s;
-  }
-  .mode-switcher button:hover { color: var(--text); }
-  .mode-switcher button.active {
-    background: #ff8000;
-    color: #000;
-    font-weight: 800;
+    margin-top: .4rem;
   }
 
-  .header-actions {
+  .rule-hint {
+    color: #aaaab8;
+    font-size: 0.82rem;
+  }
+
+  .header-status {
+    text-align: right;
+  }
+
+  .updated {
+    font-size: .75rem;
+    color: var(--text-muted);
+  }
+
+  /* ── Main content view layouts ── */
+  main {
     display: flex;
     flex-direction: column;
-    align-items: flex-end;
-    gap: 0.5rem;
-    flex-shrink: 0;
+    gap: 1.25rem;
   }
-  .updated { font-size: .75rem; color: var(--text-muted); text-align: right; }
 
-  main { display: flex; flex-direction: column; gap: 1rem; }
-
-  .two-col {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 1rem;
+  .page-view {
+    display: flex;
+    flex-direction: column;
+    gap: 1.25rem;
+    animation: fadeIn 0.25s ease-out;
   }
-  @media (max-width: 820px) {
-    .two-col { grid-template-columns: 1fr; }
-    h1 { font-size: 1.8rem; }
-    .header-actions { align-items: flex-start; }
+
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(6px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .section-banner {
+    background: linear-gradient(90deg, #181822 0%, #121216 100%);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 0.9rem 1.25rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .section-banner h2 {
+    font-size: 1.05rem;
+    font-weight: 800;
+    color: #fff;
+  }
+
+  .banner-desc {
+    font-size: 0.8rem;
+    color: var(--text-muted);
+    margin-top: 0.15rem;
   }
 
   .card {
@@ -387,39 +626,14 @@
     overflow: hidden;
   }
 
-  /* ── Toggle ─────────────────────────────────────────────────────────────── */
-  .toggle-row {
-    display: flex;
-    align-items: center;
-    gap: 1rem;
-    flex-wrap: wrap;
-  }
-  .toggle { display: flex; align-items: center; cursor: pointer; }
-  .toggle input { display: none; }
-  .pill {
-    padding: .35em .9em;
-    border-radius: 999px;
-    border: 1.5px solid var(--border);
-    font-size: .85rem;
-    font-weight: 600;
-    color: var(--text-muted);
-    transition: all .2s;
-    user-select: none;
-  }
-  .pill.active {
-    border-color: var(--accent-2);
-    color: var(--text);
-    background: color-mix(in srgb, var(--accent-2) 14%, transparent);
-  }
-  .toggle-hint { font-size: .75rem; color: var(--text-muted); }
-
-  /* ── Chart card ──────────────────────────────────────────────────────────── */
+  /* ── Chart card ── */
   .chart-tabs {
     display: flex;
     border-bottom: 1px solid var(--border);
   }
+
   .chart-tabs button {
-    padding: .7rem 1.4rem;
+    padding: .75rem 1.4rem;
     background: none;
     border: none;
     border-bottom: 2px solid transparent;
@@ -429,20 +643,40 @@
     transition: color .15s;
     margin-bottom: -1px;
   }
-  .chart-tabs button:hover { color: var(--text); }
+
+  .chart-tabs button:hover {
+    color: var(--text);
+  }
+
   .chart-tabs button.active {
     color: var(--text);
     border-bottom-color: var(--accent-2);
     font-weight: 700;
   }
 
-  /* ── Footer ──────────────────────────────────────────────────────────────── */
+  /* ── Footer ── */
   footer {
     padding: 1.5rem 0;
     border-top: 1px solid var(--border);
     text-align: center;
     font-size: .75rem;
     color: var(--text-muted);
-    margin-top: 1rem;
+    margin-top: 2rem;
+  }
+
+  @media (max-width: 720px) {
+    .f1-nav-inner {
+      height: 48px;
+    }
+    .nav-tab-btn {
+      padding: 0 0.9rem;
+      font-size: 0.85rem;
+    }
+    .nav-meta {
+      display: none;
+    }
+    h1 {
+      font-size: 1.7rem;
+    }
   }
 </style>

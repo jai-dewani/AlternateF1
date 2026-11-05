@@ -4,7 +4,7 @@
 
 import { Client, TablesDB, Databases, Account, ID, Query } from 'appwrite';
 
-const ENDPOINT = import.meta.env.VITE_APPWRITE_ENDPOINT || 'https://cloud.appwrite.io/v1';
+const ENDPOINT = import.meta.env.VITE_APPWRITE_ENDPOINT || 'https://sgp.cloud.appwrite.io/v1';
 const PROJECT_ID = import.meta.env.VITE_APPWRITE_PROJECT_ID || '';
 const DATABASE_ID = import.meta.env.VITE_APPWRITE_DATABASE_ID || 'f1_community';
 const TABLE_ID = import.meta.env.VITE_APPWRITE_TABLE_ID || import.meta.env.VITE_APPWRITE_COLLECTION_ID || 'votes';
@@ -27,23 +27,10 @@ if (isConfigured) {
   }
 }
 
-// Initial baseline mock votes for realistic first impressions
+// Baseline poll counts (empty by default; populated by real Appwrite votes)
 const DEFAULT_POLL_COUNTS = {
-  golden_ticket: {
-    sainz: 42,
-    alonso: 38,
-    gasly: 14,
-    hulkenberg: 19,
-    bearman: 22,
-    colapinto: 16,
-  },
-  robbed_award: {
-    alonso: 48,
-    sainz: 44,
-    hulkenberg: 26,
-    gasly: 18,
-    bearman: 14,
-  },
+  golden_ticket: {},
+  robbed_award: {},
 };
 
 function getLocalVotes(pollId) {
@@ -71,6 +58,24 @@ export function hasUserVotedLocally(pollId) {
 export function markUserVotedLocally(pollId, driverId) {
   try {
     localStorage.setItem(`f1_voted_${pollId}`, driverId);
+  } catch (e) {}
+}
+
+export function getUserVoteDocId(pollId) {
+  try {
+    return localStorage.getItem(`f1_doc_${pollId}`) || null;
+  } catch (e) {
+    return null;
+  }
+}
+
+export function setUserVoteDocId(pollId, docId) {
+  try {
+    if (docId) {
+      localStorage.setItem(`f1_doc_${pollId}`, docId);
+    } else {
+      localStorage.removeItem(`f1_doc_${pollId}`);
+    }
   } catch (e) {}
 }
 
@@ -133,16 +138,20 @@ export async function getPollVotes(pollId) {
 }
 
 /**
- * Cast a vote for a driver in a poll.
+ * Cast or change a vote for a driver in a poll.
  * @param {string} pollId
- * @param {string} driverId
+ * @param {string} newDriverId
+ * @param {string|null} oldDriverId
  */
-export async function castVote(pollId, driverId) {
-  markUserVotedLocally(pollId, driverId);
+export async function castVote(pollId, newDriverId, oldDriverId = null) {
+  markUserVotedLocally(pollId, newDriverId);
 
   // Update local storage instantly
   const local = getLocalVotes(pollId);
-  local[driverId] = (local[driverId] || 0) + 1;
+  if (oldDriverId && oldDriverId !== newDriverId) {
+    local[oldDriverId] = Math.max(0, (local[oldDriverId] || 1) - 1);
+  }
+  local[newDriverId] = (local[newDriverId] || 0) + 1;
   saveLocalVotes(pollId, local);
 
   if (!isConfigured || (!tablesDB && !databases)) {
@@ -150,40 +159,47 @@ export async function castVote(pollId, driverId) {
   }
 
   try {
-    // Ensure anonymous session for guest voting
-    if (account) {
-      try {
-        await account.getSession('current');
-      } catch {
-        await account.createAnonymousSession();
-      }
-    }
-
     const rowData = {
       pollId,
-      driverId,
+      driverId: newDriverId,
       count: 1,
       timestamp: new Date().toISOString(),
     };
 
+    const prevDocId = getUserVoteDocId(pollId);
+
+    // If changing vote and previous document ID is known, attempt to update it
+    if (prevDocId && databases) {
+      try {
+        await databases.updateDocument(DATABASE_ID, TABLE_ID, prevDocId, rowData);
+        return local;
+      } catch (err) {
+        // If update fails (e.g. document deleted or no Update permission), fall through to createDocument
+      }
+    }
+
     // Try TablesDB createRow
     if (tablesDB) {
       try {
-        await tablesDB.createRow({
+        const res = await tablesDB.createRow({
           databaseId: DATABASE_ID,
           tableId: TABLE_ID,
           rowId: ID.unique(),
           data: rowData,
         });
+        if (res?.$id) setUserVoteDocId(pollId, res.$id);
         return local;
       } catch (err) {
-        // Fallback to Databases
+        // fallback to Databases
       }
     }
 
     // Try Databases createDocument
     if (databases) {
-      await databases.createDocument(DATABASE_ID, TABLE_ID, ID.unique(), rowData);
+      const doc = await databases.createDocument(DATABASE_ID, TABLE_ID, ID.unique(), rowData);
+      if (doc?.$id) {
+        setUserVoteDocId(pollId, doc.$id);
+      }
     }
   } catch (err) {
     console.warn('[Appwrite] Remote vote sync error (vote saved locally):', err);

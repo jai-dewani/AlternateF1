@@ -67,7 +67,7 @@ https://jai-dewani.github.io/AlternateF1/
   function handlePostToX() {
     const text = generateTweetText();
     const tweetUrl = `https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}`;
-    window.open(tweetUrl, '_blank', 'noopener,noreferrer,width=600,height=520');
+    window.open(tweetUrl, '_blank', 'noopener,noreferrer');
   }
 
   async function handleCopyText() {

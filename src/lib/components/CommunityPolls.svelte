@@ -10,72 +10,79 @@
 
   let { drivers } = $props();
 
-  let driversMap = $derived(
-    Object.fromEntries(drivers.map((d) => [d.id, d]))
+  const TOP_TEAMS = ['red_bull', 'mclaren', 'ferrari', 'mercedes'];
+
+  let midfieldDrivers = $derived(
+    drivers.filter((d) => !TOP_TEAMS.includes(d.constructorId))
   );
-
-  let activePoll = $state('golden_ticket'); // 'golden_ticket' | 'robbed_award'
-
-  let votes = $state({});
-  let loading = $state(true);
-  let userChoice = $state(null);
 
   const POLLS = {
     golden_ticket: {
       title: '🎟️ The F1.5 Golden Ticket',
       question: 'Which midfield driver deserves an immediate promotion to a Big 4 seat in 2027?',
-      candidates: ['sainz', 'alonso', 'gasly', 'hulkenberg', 'bearman', 'colapinto'],
-      badge: 'Promotion Candidate',
     },
     robbed_award: {
       title: '😤 The "Robbed by Rocket Ships" Award',
       question: 'Who lost the most Grand Prix wins and podiums to car performance disparity in 2026?',
-      candidates: ['alonso', 'sainz', 'hulkenberg', 'gasly', 'bearman'],
-      badge: 'Unlucky Legend',
     },
   };
 
-  async function loadVotes() {
+  let pollVotes = $state({
+    golden_ticket: {},
+    robbed_award: {},
+  });
+
+  let userChoices = $state({
+    golden_ticket: hasUserVotedLocally('golden_ticket'),
+    robbed_award: hasUserVotedLocally('robbed_award'),
+  });
+
+  let loading = $state(true);
+
+  async function loadAllVotes() {
     loading = true;
-    userChoice = hasUserVotedLocally(activePoll);
     try {
-      votes = await getPollVotes(activePoll);
+      const [gt, ra] = await Promise.all([
+        getPollVotes('golden_ticket'),
+        getPollVotes('robbed_award'),
+      ]);
+      pollVotes.golden_ticket = gt || {};
+      pollVotes.robbed_award = ra || {};
     } finally {
       loading = false;
     }
   }
 
   $effect(() => {
-    loadVotes();
-    const unsub = subscribeToPoll(activePoll, (newVotes) => {
-      votes = newVotes;
+    loadAllVotes();
+    const unsub1 = subscribeToPoll('golden_ticket', (v) => {
+      pollVotes.golden_ticket = v;
     });
-    return () => unsub();
+    const unsub2 = subscribeToPoll('robbed_award', (v) => {
+      pollVotes.robbed_award = v;
+    });
+    return () => {
+      unsub1();
+      unsub2();
+    };
   });
 
-  async function handleVote(driverId) {
-    if (userChoice) return; // already voted
-    userChoice = driverId;
-    votes = await castVote(activePoll, driverId);
+  async function handleVote(pollId, driverId) {
+    const previousChoice = userChoices[pollId];
+    if (previousChoice === driverId) return; // already selected
+
+    userChoices[pollId] = driverId;
+    pollVotes[pollId] = await castVote(pollId, driverId, previousChoice);
   }
 
-  let totalVotes = $derived.by(() => {
-    return Object.values(votes).reduce((sum, v) => sum + v, 0);
-  });
-
-  function getPercentage(driverId) {
-    if (totalVotes === 0) return 0;
-    return Math.round(((votes[driverId] || 0) / totalVotes) * 100);
+  function getTotalVotes(pollId) {
+    return Object.values(pollVotes[pollId] || {}).reduce((sum, v) => sum + v, 0);
   }
 
-  function getShareVoteUrl(driverId) {
-    const driver = driversMap[driverId];
-    const poll = POLLS[activePoll];
-    const text = activePoll === 'golden_ticket'
-      ? `I voted for ${driver?.name || driverId} to get the 2027 F1.5 Golden Ticket! 🎟️\n\nWithout Red Bull, McLaren, Ferrari & Merc, the midfield fight is legendary.\nCast your vote & see live results 👇\nhttps://jai-dewani.github.io/AlternateF1/ #F1 #F1point5`
-      : `In my book, ${driver?.name || driverId} got completely robbed by the Big 4 rocket ships in 2026! 😤\n\nCheck the re-scored F1.5 championship standings 👇\nhttps://jai-dewani.github.io/AlternateF1/ #F1 #F1point5`;
-
-    return `https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}`;
+  function getPercentage(pollId, driverId) {
+    const total = getTotalVotes(pollId);
+    if (total === 0) return 0;
+    return Math.round(((pollVotes[pollId]?.[driverId] || 0) / total) * 100);
   }
 </script>
 
@@ -85,84 +92,88 @@
       <h2>Community Fan Polls</h2>
       <p class="sub">Powered by Appwrite · Live public votes</p>
     </div>
-    <div class="poll-tabs">
-      <button
-        class:active={activePoll === 'golden_ticket'}
-        onclick={() => { activePoll = 'golden_ticket'; }}
-      >Golden Ticket</button>
-      <button
-        class:active={activePoll === 'robbed_award'}
-        onclick={() => { activePoll = 'robbed_award'; }}
-      >Robbed Award</button>
-    </div>
+    {#if !isConfigured}
+      <span class="offline-tag">Offline preview mode (Local storage)</span>
+    {/if}
   </div>
 
-  <div class="poll-body">
-    <div class="poll-info">
-      <h3>{POLLS[activePoll].title}</h3>
-      <p class="question">{POLLS[activePoll].question}</p>
-      {#if !isConfigured}
-        <span class="offline-tag">Offline preview mode (Local storage)</span>
-      {/if}
-    </div>
+  <div class="polls-grid">
+    {#each Object.entries(POLLS) as [pollId, poll]}
+      <div class="poll-column">
+        <div class="poll-info">
+          <h3>{poll.title}</h3>
+          <p class="question">{poll.question}</p>
+        </div>
 
-    <div class="candidates-grid">
-      {#each POLLS[activePoll].candidates as driverId}
-        {@const driver = driversMap[driverId]}
-        {@const color = getDriverColor(driver)}
-        {@const pct = getPercentage(driverId)}
-        {@const count = votes[driverId] || 0}
-        {@const isSelected = userChoice === driverId}
+        <div class="candidates-grid">
+          {#each midfieldDrivers as driver}
+            {@const driverId = driver.id}
+            {@const color = getDriverColor(driver)}
+            {@const pct = getPercentage(pollId, driverId)}
+            {@const count = pollVotes[pollId]?.[driverId] || 0}
+            {@const isSelected = userChoices[pollId] === driverId}
 
-        <div class="card" class:selected={isSelected} style="--tc: {color}">
-          <div class="card-inner">
-            <span class="stripe"></span>
-            <div class="driver-info">
-              <span class="name">{driver?.name ?? driverId}</span>
-              <span class="team">{driver?.constructor ?? 'Midfield'}</span>
-            </div>
+            <!-- svelte-ignore a11y_click_events_have_key_events -->
+            <div
+              class="card"
+              class:selected={isSelected}
+              class:interactive={!isSelected}
+              style="--tc: {color}"
+              onclick={() => handleVote(pollId, driverId)}
+              role="button"
+              tabindex="0"
+              aria-label="Vote for {driver.name}"
+            >
+              <div class="card-inner">
+                <span class="stripe"></span>
+                <div class="driver-info">
+                  <span class="name">{driver.name}</span>
+                  <span class="team">{driver.constructor ?? 'Midfield'}</span>
+                </div>
 
-            {#if userChoice}
-              <div class="pct-box">
-                <span class="pct">{pct}%</span>
-                <span class="count">({count} votes)</span>
+                {#if userChoices[pollId]}
+                  <div class="pct-box">
+                    <span class="pct">{pct}%</span>
+                    <span class="count">({count} votes)</span>
+                  </div>
+
+                  {#if isSelected}
+                    <span class="picked-badge">✓ Voted</span>
+                  {:else}
+                    <button
+                      class="switch-btn"
+                      onclick={(e) => { e.stopPropagation(); handleVote(pollId, driverId); }}
+                    >
+                      Vote
+                    </button>
+                  {/if}
+                {:else}
+                  <button
+                    class="vote-btn"
+                    onclick={(e) => { e.stopPropagation(); handleVote(pollId, driverId); }}
+                  >
+                    Vote
+                  </button>
+                {/if}
               </div>
-            {:else}
-              <button class="vote-btn" onclick={() => handleVote(driverId)}>
-                Vote
-              </button>
-            {/if}
-          </div>
 
-          {#if userChoice}
-            <div class="progress-bar">
-              <div class="fill" style="width: {pct}%; background: {color};"></div>
+              {#if userChoices[pollId]}
+                <div class="progress-bar">
+                  <div class="fill" style="width: {pct}%; background: {color};"></div>
+                </div>
+              {/if}
             </div>
-          {/if}
+          {/each}
+        </div>
 
-          {#if isSelected}
-            <div class="voted-row">
-              <span class="your-vote">✓ Your Vote</span>
-              <a
-                href={getShareVoteUrl(driverId)}
-                target="_blank"
-                rel="noopener"
-                class="tweet-vote-btn"
-              >
-                Share Pick to 𝕏
-              </a>
-            </div>
+        <div class="footer-stats">
+          <span>Total Votes: <strong>{getTotalVotes(pollId)}</strong></span>
+          {#if userChoices[pollId]}
+            <span class="hint">Click any driver to switch your vote</span>
           {/if}
         </div>
-      {/each}
-    </div>
-
-    <div class="footer-stats">
-      <span>Total Votes: <strong>{totalVotes}</strong></span>
-      {#if userChoice}
-        <span class="thanks">Thanks for voting! Vote recorded.</span>
-      {/if}
-    </div>
+      </div>
+    {/each}
   </div>
 </div>
 
@@ -186,37 +197,8 @@
   h2 { font-size: 0.9rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; color: var(--text-muted); }
   .sub { font-size: 0.75rem; color: var(--text-muted); }
 
-  .poll-tabs {
-    display: flex;
-    background: var(--bg);
-    border: 1px solid var(--border);
-    border-radius: 6px;
-    overflow: hidden;
-  }
-  .poll-tabs button {
-    background: none;
-    border: none;
-    color: var(--text-muted);
-    font-size: 0.78rem;
-    padding: 0.35rem 0.85rem;
-    cursor: pointer;
-    transition: all 0.15s;
-  }
-  .poll-tabs button:hover { color: var(--text); }
-  .poll-tabs button.active {
-    background: var(--bg-hover);
-    color: var(--text);
-    font-weight: 700;
-  }
-
-  .poll-body { padding: 1.25rem; }
-  .poll-info { margin-bottom: 1.25rem; }
-  h3 { font-size: 1.15rem; font-weight: 800; color: #fff; margin-bottom: 0.25rem; }
-  .question { font-size: 0.85rem; color: var(--text-muted); }
-
   .offline-tag {
     display: inline-block;
-    margin-top: 0.4rem;
     font-size: 0.7rem;
     background: rgba(255, 128, 0, 0.12);
     color: #ff8000;
@@ -225,24 +207,79 @@
     border: 1px solid rgba(255, 128, 0, 0.25);
   }
 
-  .candidates-grid {
+  .polls-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-    gap: 0.75rem;
+    grid-template-columns: 1fr 1fr;
+    gap: 1.25rem;
+    padding: 1.25rem;
+  }
+  @media (max-width: 900px) {
+    .polls-grid {
+      grid-template-columns: 1fr;
+    }
+  }
+
+  .poll-column {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 1.25rem;
+  }
+
+  .poll-info h3 { font-size: 1.1rem; font-weight: 800; color: #fff; margin-bottom: 0.25rem; }
+  .question { font-size: 0.85rem; color: var(--text-muted); min-height: 2.5rem; }
+
+  .candidates-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    max-height: 480px;
+    overflow-y: auto;
+    padding-right: 6px;
+  }
+
+  /* Custom subtle scrollbar */
+  .candidates-grid::-webkit-scrollbar {
+    width: 6px;
+  }
+  .candidates-grid::-webkit-scrollbar-track {
+    background: rgba(255, 255, 255, 0.02);
+    border-radius: 3px;
+  }
+  .candidates-grid::-webkit-scrollbar-thumb {
+    background: #2a2a35;
+    border-radius: 3px;
+  }
+  .candidates-grid::-webkit-scrollbar-thumb:hover {
+    background: #3f3f50;
   }
 
   .card {
-    background: var(--bg);
+    background: var(--bg-card);
     border: 1px solid var(--border);
     border-radius: 8px;
     padding: 0.75rem;
     display: flex;
     flex-direction: column;
     gap: 0.5rem;
-    transition: border-color 0.15s;
+    transition: all 0.15s ease;
+    cursor: default;
+    user-select: none;
   }
-  .card:hover { border-color: #3f3f50; }
-  .card.selected { border-color: var(--tc); background: rgba(255, 255, 255, 0.02); }
+  .card.interactive {
+    cursor: pointer;
+  }
+  .card.interactive:hover {
+    border-color: #4a4a5e;
+    background: var(--bg-hover);
+  }
+  .card.selected {
+    border-color: var(--tc);
+    background: rgba(255, 255, 255, 0.03);
+  }
 
   .card-inner {
     display: flex;
@@ -271,6 +308,35 @@
     border-color: #ff8000;
   }
 
+  .switch-btn {
+    background: transparent;
+    border: 1px solid var(--border);
+    color: var(--text-muted);
+    padding: 0.25rem 0.65rem;
+    border-radius: 5px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.15s;
+    margin-left: 0.5rem;
+  }
+  .card:hover .switch-btn {
+    background: #ff8000;
+    color: #000;
+    border-color: #ff8000;
+  }
+
+  .picked-badge {
+    color: #3cb371;
+    font-weight: 700;
+    font-size: 0.78rem;
+    padding: 0.2rem 0.5rem;
+    border-radius: 4px;
+    background: rgba(60, 179, 113, 0.12);
+    border: 1px solid rgba(60, 179, 113, 0.25);
+    margin-left: 0.5rem;
+  }
+
   .pct-box { text-align: right; }
   .pct { font-size: 1.1rem; font-weight: 800; color: #fff; }
   .count { display: block; font-size: 0.7rem; color: var(--text-muted); }
@@ -284,35 +350,16 @@
   }
   .fill { height: 100%; border-radius: 3px; transition: width 0.4s ease; }
 
-  .voted-row {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding-top: 0.25rem;
-    font-size: 0.75rem;
-  }
-  .your-vote { color: #3cb371; font-weight: 700; }
-  .tweet-vote-btn {
-    color: #fff;
-    background: #1d9bf0;
-    padding: 0.2rem 0.55rem;
-    border-radius: 4px;
-    font-size: 0.72rem;
-    font-weight: 600;
-    text-decoration: none;
-    transition: background 0.15s;
-  }
-  .tweet-vote-btn:hover { background: #0c85d0; text-decoration: none; }
-
   .footer-stats {
     display: flex;
     justify-content: space-between;
+    align-items: center;
     font-size: 0.75rem;
     color: var(--text-muted);
-    margin-top: 1rem;
+    margin-top: auto;
     border-top: 1px solid var(--border);
     padding-top: 0.75rem;
   }
   .footer-stats strong { color: #fff; }
-  .thanks { color: #3cb371; font-weight: 600; }
+  .hint { color: var(--text-muted); font-size: 0.72rem; }
 </style>
